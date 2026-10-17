@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, ESTADO_CONSULTA, TIPO_CONSULTA, ESTADO_RESULTADO, PRIORIDAD, DECISION %}
+{% block title %}Informe de consulta #{{ enc.id_encuentro }}{% endblock %}
+{% block acciones %}
+  <a class="btn sec" href="{{ url_for('consultas.detalle', id_encuentro=enc.id_encuentro) }}">Ver consulta</a>
+  <button class="btn" type="button" data-imprimir>{{ icono('imprimir', 16) }} Imprimir</button>
+{% endblock %}
+{% block content %}
+<article class="card informe">
+  <header class="informe-head">
+    <div>
+      <div class="brand-mini">MedAssist AI · Informe clínico</div>
+      <h2 class="card-title">{{ TIPO_CONSULTA[enc.tipo] }} del {{ enc.fecha_inicio|fecha }}</h2>
+    </div>
+    {{ badge(enc.estado, ESTADO_CONSULTA[enc.estado]) }}
+  </header>
+
+  <dl class="dl">
+    <dt>Paciente</dt><dd>{{ p.nombre }} {{ p.apellido_paterno }} {{ p.apellido_materno or '' }} · {{ p.curp }} · {{ p.sexo|sexo }}, {{ p.edad }} años</dd>
+    <dt>Médico</dt><dd>{{ enc.medico }}{% if enc.especialidad %} · {{ enc.especialidad }}{% endif %} · Cédula {{ medico.cedula_profesional if medico else '—' }}</dd>
+    <dt>Periodo</dt><dd>{{ enc.fecha_inicio|fechahora }}{% if enc.fecha_fin %} — {{ enc.fecha_fin|fechahora }}{% endif %}</dd>
+    <dt>Motivo</dt><dd>{{ enc.motivo }}</dd>
+  </dl>
+
+  <h3 class="informe-sec">Diagnósticos</h3>
+  {% if diagnosticos %}
+  <table class="tabla"><thead><tr><th>CIE-10</th><th>Descripción</th><th>Tipo</th><th>Estado</th></tr></thead><tbody>
+    {% for d in diagnosticos %}<tr><td class="mono">{{ d.codigo_cie10 }}</td><td>{{ d.descripcion }}</td><td>{{ d.tipo|capitalize }}</td><td>{{ d.estado|capitalize }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="muted">Sin diagnósticos.</p>{% endif %}
+
+  <h3 class="informe-sec">Resultados de estudios</h3>
+  {% if ordenes %}
+  <table class="tabla"><thead><tr><th>Prueba</th><th class="num">Resultado</th><th>Interpretación</th><th>Fecha</th></tr></thead><tbody>
+    {% for o in ordenes %}
+    <tr><td>{{ o.prueba }}</td>
+        <td class="num">{% if o.valor_numerico is not none %}{{ o.valor_numerico|num }} {{ o.unidad or '' }}{% else %}{{ o.valor_texto or 'Pendiente' }}{% endif %}</td>
+        <td>{% if o.estado_resultado %}{{ badge(o.estado_resultado, ESTADO_RESULTADO[o.estado_resultado]) }}{% else %}—{% endif %}</td>
+        <td class="small">{{ o.fecha_resultado|fechahora if o.fecha_resultado else '—' }}</td></tr>
+    {% endfor %}
+  </tbody></table>
+  {% else %}<p class="muted">No se solicitaron estudios.</p>{% endif %}
+
+  <h3 class="informe-sec">Tratamiento</h3>
+  {% if prescripciones %}
+  <table class="tabla"><thead><tr><th>Medicamento</th><th>Dosis</th><th>Indicación</th></tr></thead><tbody>
+    {% for x in prescripciones %}<tr><td>{{ x.nombre_comercial }} <span class="muted small">{{ x.presentacion }}</span></td>
+      <td class="small">{{ x.dosis_txt }} {{ x.codigo_ucum }} {{ x.via|lower }} cada {{ x.frecuencia_horas }} h</td><td class="small">{{ x.indicacion or '—' }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% else %}<p class="muted">Sin prescripciones.</p>{% endif %}
+
+  <h3 class="informe-sec">Trazabilidad del copiloto</h3>
+  <p class="small muted">Cada recomendación indica la regla y la versión que la generó, el protocolo que la respalda, la evidencia usada y la decisión del médico.</p>
+  {% for r in recomendaciones %}
+  <div class="traza">
+    <div class="traza-head">
+      <b>{{ r.regla }} v{{ r.numero_version }}</b> · {{ r.regla_nombre }}
+      {{ badge(r.prioridad_asignada, PRIORIDAD[r.prioridad_asignada]) }}
+      {% if r.decision %}{{ badge(r.decision, DECISION[r.decision]) }}{% else %}{{ badge('pendiente', 'Sin decisión') }}{% endif %}
+    </div>
+    <p>{{ r.texto_generado }}</p>
+    <p class="small muted">Protocolo {{ r.protocolo }} {{ r.version_protocolo }} · generada {{ r.fecha_hora|fechahora }}</p>
+    {% if r.evidencia %}
+    <table class="tabla evidencia"><tbody>
+      {% for e in r.evidencia %}<tr class="{{ 'ok' if e.cumplida else 'no' }}"><td>{{ e.variable_nombre }}</td><td class="mono small">{{ e.operador }} {{ e.umbral or '' }} {{ e.unidad_umbral or '' }}</td><td>{{ e.valor_observado or 'sin dato' }} {{ e.unidad or '' }}</td><td>{{ '✓ cumple' if e.cumplida else '✗ no cumple' }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% endif %}
+    {% if r.decision %}<p class="small"><b>{{ r.medico_decide }}</b> ({{ r.fecha_decision|fechahora }}): {{ r.justificacion }}{% if r.accion_final %} — Acción final: {{ r.accion_final }}{% endif %}</p>{% endif %}
+  </div>
+  {% else %}<p class="muted">El copiloto no generó recomendaciones en esta consulta.</p>{% endfor %}
+
+  <footer class="informe-pie small muted">Datos sintéticos generados para el proyecto académico MedAssist AI · Emitido {{ ahora()|fechahora }}</footer>
+</article>
+{% endblock %}

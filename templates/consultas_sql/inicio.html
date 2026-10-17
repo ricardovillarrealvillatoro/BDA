@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge %}
+{% block title %}Consultas SQL{% endblock %}
+{% block subtitulo %}<div class="sub">Evidencia de JOINs y consultas complementarias · fuente: db/05_consultas.sql · ejecución de solo lectura</div>{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="table-wrap">
+    <table class="tabla">
+      <thead><tr><th>Tipo</th><th>Consulta</th><th>Pregunta que responde</th><th>Uso en la aplicación</th><th></th></tr></thead>
+      <tbody>
+      {% for c in consultas %}
+        <tr>
+          <td>{{ badge('teal sin-punto', c.tipo) }}</td>
+          <td><b>{{ c.titulo }}</b></td>
+          <td class="small">{{ c.pregunta }}</td>
+          <td class="small muted">{{ c.uso }}</td>
+          <td class="acciones"><a class="btn sec mini" href="{{ url_for('consultas_sql.detalle', id_consulta=c.id) }}">{{ icono('sql', 14) }} Ejecutar</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

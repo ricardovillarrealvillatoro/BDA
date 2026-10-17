@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import campo, seleccion %}
+{% block title %}{{ 'Registrar paciente' if modo == 'nuevo' else 'Editar paciente' }}{% endblock %}
+{% block content %}
+<section class="card" style="max-width: 860px">
+  <form method="post" data-validar novalidate class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-grid">
+      {{ campo('curp', 'CURP', f, errores, requerido=True, ayuda='18 caracteres, por ejemplo GAMA850312MNLRRN09',
+               attrs='maxlength="18" pattern="[A-Z]{4}[0-9]{6}[HMX][A-Z]{5}[A-Z0-9][0-9]" data-mayusculas data-mensaje="La CURP debe tener el formato oficial de 18 caracteres." autocomplete="off"') }}
+      {{ seleccion('sexo', 'Sexo', [('F','Femenino'), ('M','Masculino'), ('I','Intersexual / no especificado')], f, errores, requerido=True) }}
+      {{ campo('nombre', 'Nombre(s)', f, errores, requerido=True, attrs='maxlength="80" data-mensaje="Escriba el nombre."') }}
+      {{ campo('apellido_paterno', 'Apellido paterno', f, errores, requerido=True, attrs='maxlength="60" data-mensaje="Escriba el apellido paterno."') }}
+      {{ campo('apellido_materno', 'Apellido materno', f, errores, attrs='maxlength="60"') }}
+      {{ campo('fecha_nacimiento', 'Fecha de nacimiento', f, errores, tipo='date', requerido=True,
+               attrs='data-no-futura data-mensaje="Escriba una fecha de nacimiento válida (no futura)."') }}
+      {{ campo('telefono', 'Teléfono', f, errores, tipo='tel', attrs='maxlength="20" pattern="[0-9 +()\-]{7,20}" data-mensaje="Solo dígitos, espacios, +, ( ) y guiones."') }}
+      {{ campo('email', 'Correo electrónico', f, errores, tipo='email', attrs='maxlength="120" data-mensaje="Escriba un correo válido."') }}
+      {{ campo('direccion', 'Dirección', f, errores, clase='full', attrs='maxlength="200"') }}
+    </div>
+    <div class="form-actions">
+      <a class="btn sec" href="{{ url_for('pacientes.detalle', id_paciente=paciente.id_paciente) if paciente else url_for('pacientes.lista') }}">Cancelar</a>
+      <button class="btn" type="submit">{{ 'Registrar paciente' if modo == 'nuevo' else 'Guardar cambios' }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

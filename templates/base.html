@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Panel{% endblock %} · MedAssist AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% from "partials/_macros.html" import iniciales %}
+{#
+  Enlace del menú: solo aparece si la ruta ya existe y el rol del usuario puede verla
+  (ver puede_ver y PERMISOS en app/auth.py). Al crear un Blueprint nuevo, su enlace aparece solo.
+#}
+{% macro enlace(endpoint, nombre_icono, texto) -%}
+{% if puede_ver(endpoint) %}
+<a class="nav-item {{ 'activo' if request.endpoint == endpoint or (request.blueprint and request.blueprint == endpoint.split('.')[0]) }}" href="{{ url_for(endpoint) }}">{{ icono(nombre_icono) }} {{ texto }}</a>
+{% endif %}
+{%- endmacro %}
+{% if session.id_usuario %}
+<div class="layout">
+  <aside class="sidebar">
+    <div>
+      <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-icon">{{ icono('copiloto', 18) }}</span>
+        <span>
+          <span class="brand-name">MedAssist AI</span><br>
+          <span class="brand-sub">COPILOTO CLÍNICO</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Navegación principal">
+        <div class="nav-section">
+          <div class="nav-label">ESPACIO CLÍNICO</div>
+          {{ enlace('index', 'inicio', 'Panel principal') }}
+          {{ enlace('consultas.lista', 'consultas', 'Consultas') }}
+          {{ enlace('pacientes.lista', 'pacientes', 'Pacientes') }}
+          {{ enlace('lab', 'laboratorio', 'Laboratorio') }}
+          {{ enlace('report', 'informes', 'Informes médicos') }}
+        </div>
+        {% if puede_ver('medicos.lista') or puede_ver('performance') or puede_ver('audit') or puede_ver('consultas_sql.inicio') %}
+        <div class="nav-section">
+          <div class="nav-label">GOBERNANZA</div>
+          {{ enlace('medicos.lista', 'medicos', 'Médicos') }}
+          {{ enlace('performance', 'rendimiento', 'Rendimiento') }}
+          {{ enlace('audit', 'auditoria', 'Auditoría') }}
+          {{ enlace('consultas_sql.inicio', 'sql', 'Consultas SQL') }}
+        </div>
+        {% endif %}
+      </nav>
+    </div>
+    <div class="user-box">
+      <span class="avatar">{{ iniciales(session.nombre) }}</span>
+      <div>
+        <div class="user-name">{% if 'medico' in session.roles %}Dr(a). {% endif %}{{ session.nombre }}</div>
+        <div class="user-role">{% for r in session.roles %}{{ NOMBRES_ROL[r] }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+      </div>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn-icon" type="submit" title="Cerrar sesión" aria-label="Cerrar sesión">{{ icono('salir', 16) }}</button>
+      </form>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1>{% block encabezado %}{{ self.title() }}{% endblock %}</h1>
+        {% block subtitulo %}{% endblock %}
+      </div>
+      <div class="acciones-fila">{% block acciones %}{% endblock %}</div>
+    </header>
+    <main class="content">
+      {% include "partials/_flashes.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% else %}
+  {% block publico %}{% endblock %}
+{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

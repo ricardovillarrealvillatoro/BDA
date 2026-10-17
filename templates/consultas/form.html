@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import campo, seleccion %}
+{% block title %}{{ 'Nueva consulta' if modo == 'nueva' else 'Editar consulta' }}{% endblock %}
+{% block content %}
+<section class="card" style="max-width: 860px">
+  {% if modo == 'editar' %}
+  <p class="muted">Paciente: <b>{{ enc.paciente }}</b> · Médico: {{ enc.medico }} · Inicio {{ enc.fecha_inicio|fechahora }}</p>
+  {% endif %}
+  <form method="post" data-validar novalidate class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-grid">
+      {% if modo == 'nueva' %}
+        {% set opciones_pac = [] %}{% for p in pacientes %}{% set _ = opciones_pac.append((p.id_paciente, p.nombre ~ ' · ' ~ p.curp)) %}{% endfor %}
+        {{ seleccion('id_paciente', 'Paciente', opciones_pac, f, errores, requerido=True, clase='full') }}
+        {% if es_admin %}
+          {% set opciones_med = [] %}{% for m in medicos %}{% set _ = opciones_med.append((m.id_medico, m.nombre)) %}{% endfor %}
+          {{ seleccion('id_medico', 'Médico tratante', opciones_med, f, errores, requerido=True) }}
+        {% endif %}
+      {% endif %}
+      {% set opciones_tipo = [] %}{% for v, t in tipos.items() %}{% set _ = opciones_tipo.append((v, t)) %}{% endfor %}
+      {{ seleccion('tipo', 'Tipo de atención', opciones_tipo, f, errores, requerido=True) }}
+      {{ campo('motivo', 'Motivo de la consulta', f, errores, tipo='textarea', requerido=True, clase='full',
+               attrs='minlength="5" maxlength="1000" data-mensaje="Describa el motivo (mínimo 5 caracteres)."') }}
+      {% if modo == 'editar' %}
+      {{ campo('notas', 'Notas del médico', f, errores, tipo='textarea', clase='full', attrs='maxlength="4000"') }}
+      {% endif %}
+    </div>
+    {% if modo == 'nueva' %}<p class="field-help">El paciente no debe tener otra consulta abierta. ¿No está en la lista? <a class="link" href="{{ url_for('pacientes.nuevo') }}">Regístrelo primero</a>.</p>{% endif %}
+    <div class="form-actions">
+      <a class="btn sec" href="{{ url_for('consultas.detalle', id_encuentro=enc.id_encuentro) if enc else url_for('consultas.lista') }}">Cancelar</a>
+      <button class="btn" type="submit">{{ 'Abrir consulta' if modo == 'nueva' else 'Guardar cambios' }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, paginacion, ESTADO_RESULTADO %}
+{% block title %}Laboratorio{% endblock %}
+{% block subtitulo %}<div class="sub">Captura de resultados (sp_registrar_resultado) y consulta (v_resultados_laboratorio)</div>{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="card-head">
+    <h2 class="card-title">Pruebas pendientes</h2>
+    <span class="card-sub">{{ pendientes|length }} en consultas abiertas · urgentes primero</span>
+  </div>
+  <div class="table-wrap">
+    <table class="tabla">
+      <thead><tr><th>Orden</th><th>Paciente</th><th>Prueba</th><th>Solicitó</th><th style="min-width: 340px">Resultado</th></tr></thead>
+      <tbody>
+      {% for d in pendientes %}
+        <tr>
+          <td class="small">#{{ d.id_orden }} · {{ d.fecha_orden|fechahora }}<br>{{ badge('red' if d.prioridad == 'urgente' else 'cerrado', d.prioridad|capitalize) }}</td>
+          <td><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=d.id_encuentro) }}#ordenes">{{ d.paciente }}</a></td>
+          <td>{{ d.prueba }}</td>
+          <td class="small">{{ d.medico }}</td>
+          <td>
+            <form method="post" action="{{ url_for('laboratorio.capturar', id_detalle=d.id_detalle) }}" class="acciones-fila"
+                  data-validar data-uno-de="valor_numerico,valor_texto" data-mensaje="Capture un valor numérico o cualitativo." novalidate>
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input class="input" name="valor_numerico" type="number" step="any" min="0" placeholder="Valor{{ ' (' ~ d.unidad ~ ')' if d.unidad }}"
+                     aria-label="Valor numérico de {{ d.prueba }}" style="width: 150px" data-mensaje="El valor no puede ser negativo.">
+              <input class="input" name="valor_texto" maxlength="200" placeholder="o texto" aria-label="Valor cualitativo" style="width: 110px">
+              <button class="btn mini" type="submit">{{ icono('check', 14) }} Guardar</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}<tr><td colspan="5"><div class="vacio">No hay pruebas pendientes en consultas abiertas.</div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2 class="card-title">Resultados reportados</h2><span class="card-sub">Interpretados con el rango de referencia por sexo y edad del paciente</span></div>
+  <form class="filtros" method="get">
+    <div class="field grow"><label for="q">Buscar</label><input id="q" name="q" value="{{ q }}" placeholder="Paciente o prueba" maxlength="80"></div>
+    <div class="field"><label for="estado">Interpretación</label>
+      <select id="estado" name="estado"><option value="">Todas</option>
+        {% for v, t in estados.items() %}<option value="{{ v }}" {{ 'selected' if estado == v }}>{{ t }}</option>{% endfor %}</select></div>
+    <button class="btn sec" type="submit">{{ icono('buscar', 16) }} Filtrar</button>
+  </form>
+  <div class="table-wrap">
+    <table class="tabla">
+      <thead><tr><th>Fecha</th><th>Paciente</th><th>Prueba</th><th>LOINC</th><th class="num">Valor</th><th>Interpretación</th></tr></thead>
+      <tbody>
+      {% for r in resultados %}
+        <tr>
+          <td class="small">{{ r.fecha_resultado|fechahora }}</td>
+          <td><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=r.id_encuentro) }}#ordenes">{{ r.paciente }}</a></td>
+          <td>{{ r.prueba }}</td>
+          <td class="mono small">{{ r.codigo_loinc or '—' }}</td>
+          <td class="num">{% if r.valor_numerico is not none %}{{ r.valor_numerico|num }} {{ r.unidad or '' }}{% else %}{{ r.valor_texto }}{% endif %}</td>
+          <td>{{ badge(r.estado, ESTADO_RESULTADO[r.estado]) }}</td>
+        </tr>
+      {% else %}<tr><td colspan="6"><div class="vacio">Sin resultados con esos filtros.</div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ paginacion(total, pagina, tam, 'laboratorio.inicio') }}
+</section>
+{% endblock %}

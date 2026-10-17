@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, boton_post, ESTADO_CONSULTA, TIPO_CONSULTA, ESTADO_RESULTADO %}
+{% block title %}Consulta #{{ enc.id_encuentro }}{% endblock %}
+{% block subtitulo %}<div class="sub">{{ enc.paciente }} · {{ TIPO_CONSULTA[enc.tipo] }} · {{ enc.medico }}</div>{% endblock %}
+{% set abierta = enc.estado == 'abierto' %}
+{% set editable = abierta and puede_modificar %}
+{% block acciones %}
+  {{ badge(enc.estado, ESTADO_CONSULTA[enc.estado]) }}
+  {% if editable %}
+    <a class="btn sec" href="{{ url_for('consultas.editar', id_encuentro=enc.id_encuentro) }}">{{ icono('editar', 16) }} Editar</a>
+    {{ boton_post(url_for('consultas.cerrar', id_encuentro=enc.id_encuentro), 'Cerrar consulta', 'btn',
+                  '¿Cerrar la consulta? Después ya no se podrá modificar.') }}
+  {% endif %}
+  {% if not abierta %}
+    <a class="btn sec" href="{{ url_for('reportes.consulta', id_encuentro=enc.id_encuentro) }}">{{ icono('informes', 16) }} Informe</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<section class="card">
+  <dl class="dl">
+    <dt>Paciente</dt><dd><a class="link" href="{{ url_for('pacientes.detalle', id_paciente=enc.id_paciente) if tiene_rol('medico','admin_clinico') else '#' }}">{{ enc.paciente }}</a> · {{ enc.curp }} · {{ enc.sexo|sexo }}, {{ enc.edad }} años</dd>
+    <dt>Médico tratante</dt><dd>{{ enc.medico }}</dd>
+    <dt>Periodo</dt><dd>{{ enc.fecha_inicio|fechahora }}{% if enc.fecha_fin %} — {{ enc.fecha_fin|fechahora }}{% endif %}</dd>
+    <dt>Motivo</dt><dd>{{ enc.motivo }}</dd>
+    <dt>Notas</dt><dd style="white-space: pre-line">{{ enc.notas or '—' }}</dd>
+  </dl>
+  {% if abierta and not puede_modificar %}<p class="flash warning">Solo el médico tratante o un administrador clínico pueden modificar esta consulta.</p>{% endif %}
+</section>
+
+<div class="grid-2">
+  <section class="card" id="diagnosticos">
+    <div class="card-head"><h2 class="card-title">Diagnósticos</h2><span class="card-sub">Catálogo CIE-10</span></div>
+    <div class="table-wrap"><table class="tabla">
+      <thead><tr><th>Código</th><th>Descripción</th><th>Tipo</th><th>Estado</th></tr></thead>
+      <tbody>
+      {% for d in diagnosticos %}
+        <tr><td class="mono">{{ d.codigo_cie10 }}</td><td>{{ d.descripcion }}</td><td>{{ d.tipo|capitalize }}</td><td>{{ d.estado|capitalize }}</td></tr>
+      {% else %}<tr><td colspan="4"><div class="vacio">Sin diagnósticos. Para cerrar la consulta se necesita uno principal.</div></td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+    {% if editable %}
+    <form method="post" action="{{ url_for('consultas.agregar_diagnostico', id_encuentro=enc.id_encuentro) }}" class="form-grid" data-validar novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field full">
+        <label for="codigo_cie10">Diagnóstico</label>
+        <select id="codigo_cie10" name="codigo_cie10" required data-mensaje="Seleccione un diagnóstico.">
+          <option value="">Seleccione…</option>
+          {% for c in cie10 %}<option value="{{ c.codigo_cie10 }}">{{ c.codigo_cie10 }} · {{ c.descripcion }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field"><label for="tipo_dx">Tipo</label>
+        <select id="tipo_dx" name="tipo">{% if not diagnosticos|selectattr('tipo', 'equalto', 'principal')|list %}<option value="principal">Principal</option>{% endif %}<option value="secundario">Secundario</option></select></div>
+      <div class="field"><label for="estado_dx">Estado</label>
+        <select id="estado_dx" name="estado"><option value="presuntivo">Presuntivo</option><option value="confirmado">Confirmado</option><option value="descartado">Descartado</option></select></div>
+      <div class="form-actions full"><button class="btn" type="submit">{{ icono('mas', 16) }} Agregar diagnóstico</button></div>
+    </form>
+    {% endif %}
+  </section>
+
+  <section class="card" id="prescripciones">
+    <div class="card-head"><h2 class="card-title">Prescripciones</h2><span class="card-sub">Se revisan interacciones y alergias</span></div>
+    <div class="table-wrap"><table class="tabla">
+      <thead><tr><th>Medicamento</th><th>Dosis</th><th>Periodo</th></tr></thead>
+      <tbody>
+      {% for p in prescripciones %}
+        <tr><td><b>{{ p.nombre_comercial }}</b><br><span class="small muted">{{ p.presentacion }}</span></td>
+            <td class="small">{{ p.dosis_txt }} {{ p.codigo_ucum }} {{ p.via|lower }} c/{{ p.frecuencia_horas }} h</td>
+            <td class="small">{{ p.fecha_inicio|fecha }}{% if p.fecha_fin %} — {{ p.fecha_fin|fecha }}{% else %} · indefinido{% endif %}</td></tr>
+      {% else %}<tr><td colspan="3"><div class="vacio">Sin prescripciones en esta consulta.</div></td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+    {% if editable and tiene_rol('medico') %}
+    <form method="post" action="{{ url_for('consultas.prescribir', id_encuentro=enc.id_encuentro) }}" class="form-grid" data-validar novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field full"><label for="id_medicamento">Medicamento</label>
+        <select id="id_medicamento" name="id_medicamento" required data-mensaje="Seleccione un medicamento."><option value="">Seleccione…</option>
+          {% for m in medicamentos %}<option value="{{ m.id_medicamento }}">{{ m.nombre }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="dosis">Dosis</label><input id="dosis" name="dosis" type="number" step="0.001" min="0.001" required data-mensaje="La dosis debe ser mayor que cero."></div>
+      <div class="field"><label for="id_unidad">Unidad</label>
+        <select id="id_unidad" name="id_unidad" required>{% for u in unidades %}<option value="{{ u.id_unidad }}" {{ 'selected' if u.codigo_ucum == 'mg' }}>{{ u.codigo_ucum }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="id_via">Vía</label>
+        <select id="id_via" name="id_via" required>{% for v in vias %}<option value="{{ v.id_via }}" {{ 'selected' if v.nombre == 'Oral' }}>{{ v.nombre }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="frecuencia_horas">Cada (horas)</label><input id="frecuencia_horas" name="frecuencia_horas" type="number" min="1" max="168" value="8" required data-mensaje="Frecuencia entre 1 y 168 horas."></div>
+      <div class="field"><label for="fecha_inicio">Inicio</label><input id="fecha_inicio" name="fecha_inicio" type="date" value="{{ hoy }}" required></div>
+      <div class="field"><label for="fecha_fin">Fin (opcional)</label><input id="fecha_fin" name="fecha_fin" type="date" data-no-antes-de="fecha_inicio" data-mensaje="El fin no puede ser antes del inicio."></div>
+      <div class="field full"><label for="indicacion">Indicación</label><input id="indicacion" name="indicacion" maxlength="500"></div>
+      <div class="form-actions full"><button class="btn" type="submit">{{ icono('mas', 16) }} Prescribir</button></div>
+    </form>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card" id="ordenes">
+  <div class="card-head"><h2 class="card-title">Órdenes y resultados</h2><span class="card-sub">El estado del resultado se calcula con el rango de referencia por sexo y edad</span></div>
+  <div class="table-wrap"><table class="tabla">
+    <thead><tr><th>Orden</th><th>Prueba</th><th>Estado</th><th class="num">Resultado</th><th>Interpretación</th></tr></thead>
+    <tbody>
+    {% for o in ordenes %}
+      <tr>
+        <td class="small">#{{ o.id_orden }} · {{ o.fecha_orden|fechahora }}<br>{{ badge('red' if o.prioridad == 'urgente' else 'cerrado', o.prioridad) }}</td>
+        <td>{{ o.prueba }}</td>
+        <td>{{ badge(o.estado_detalle == 'reportada' and 'teal' or 'amber', o.estado_detalle) }}</td>
+        <td class="num">{% if o.valor_numerico is not none %}{{ o.valor_numerico|num }} {{ o.unidad or '' }}{% else %}{{ o.valor_texto or '—' }}{% endif %}</td>
+        <td>{% if o.estado_resultado %}{{ badge(o.estado_resultado, ESTADO_RESULTADO[o.estado_resultado]) }}{% endif %}</td>
+      </tr>
+    {% else %}<tr><td colspan="5"><div class="vacio">Sin órdenes médicas.</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {% if editable %}
+  <form method="post" action="{{ url_for('consultas.crear_orden', id_encuentro=enc.id_encuentro) }}" class="stack" data-validar novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <fieldset class="field" data-min-checks="1" data-mensaje="Seleccione al menos una prueba.">
+      <label>Nueva orden: seleccione las pruebas</label>
+      <div class="checks">
+        {% for p in pruebas %}<label class="check"><input type="checkbox" name="pruebas" value="{{ p.id_prueba }}"><span>{{ p.nombre }} <span class="muted small">· {{ p.tipo }}</span></span></label>{% endfor %}
+      </div>
+    </fieldset>
+    <div class="acciones-fila" style="justify-content: flex-end">
+      <select name="prioridad" class="input" style="width:auto" aria-label="Prioridad"><option value="rutina">Rutina</option><option value="urgente">Urgente</option></select>
+      <button class="btn" type="submit">{{ icono('mas', 16) }} Crear orden</button>
+    </div>
+  </form>
+  {% endif %}
+</section>
+
+<section class="card" id="recomendaciones">
+  <div class="card-head">
+    <h2 class="card-title">Recomendaciones del copiloto</h2>
+    {% if editable %}
+    <form method="post" action="{{ url_for('consultas.evaluar', id_encuentro=enc.id_encuentro) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn sec mini" type="submit">{{ icono('refrescar', 14) }} Evaluar reglas</button>
+    </form>
+    {% endif %}
+  </div>
+  <div class="grid-2">
+    {% for rec in recomendaciones %}
+      {% with puede_decidir=(abierta and puede_modificar and tiene_rol('medico')), volver='consulta' %}{% include "consultas/_recomendacion.html" %}{% endwith %}
+    {% else %}<div class="vacio">El copiloto no generó recomendaciones en esta consulta.</div>{% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2 class="card-title">Contexto clínico integrado</h2><span class="card-sub">v_contexto_clinico · lo que el copiloto sabe del paciente en esta consulta</span></div>
+  <div class="table-wrap"><table class="tabla">
+    <thead><tr><th>Fuente</th><th>Concepto</th><th>Valor</th><th>Fecha</th></tr></thead>
+    <tbody>
+    {% for c in contexto %}
+      <tr><td>{{ badge('blue sin-punto', c.fuente|replace('_', ' ')) }}</td><td>{{ c.concepto }}</td><td>{{ c.valor or '—' }} {{ c.unidad or '' }}</td><td class="small">{{ c.fecha|fecha }}</td></tr>
+    {% else %}<tr><td colspan="4"><div class="vacio">Sin datos clínicos.</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+{% if editable %}
+<section class="card no-print">
+  <h2 class="card-title">Cancelar consulta</h2>
+  <p class="small muted">Solo para consultas abiertas por error y sin información clínica (resultados, diagnósticos confirmados o decisiones).</p>
+  <form method="post" action="{{ url_for('consultas.cancelar', id_encuentro=enc.id_encuentro) }}" class="acciones-fila" data-validar novalidate
+        data-confirm="¿Cancelar esta consulta? Quedará en el historial como cancelada.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field" style="flex:1; min-width: 240px">
+      <input name="motivo" placeholder="Motivo de la cancelación (mínimo 10 caracteres)" required minlength="10" maxlength="300" aria-label="Motivo de la cancelación" data-mensaje="Explique el motivo (mínimo 10 caracteres).">
+    </div>
+    <button class="btn peligro" type="submit">Cancelar consulta</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+usuarios
+
+Contraseña de todos: MedAssist2026!
+(datos de prueba de db/06_datos_prueba.sql)
+
+usuario          nombre             rol(es)                  qué ve en la app
+---------------  -----------------  -----------------------  ------------------------------
+admin            Aaron Vance        admin_clinico, medico    todo
+auditor          Lucía Fernández    auditor                  Panel, Rendimiento, Auditoría
+copiloto         Copiloto Sistema   sistema                  solo Panel (cuenta del sistema)
+helen.rostova    Helen Rostova      medico                   Panel, Laboratorio, Informes
+clara.mercer     Clara Mercer       medico                   Panel, Laboratorio, Informes
+jorge.salinas    Jorge Salinas      medico                   Panel, Laboratorio, Informes
+ana.gutierrez    Ana Gutiérrez      medico                   Panel, Laboratorio, Informes
+ricardo.pena     Ricardo Peña       medico                   Panel, Laboratorio, Informes
+sofia.cantu      Sofía Cantú        medico                   Panel, Laboratorio, Informes
+miguel.duran     Miguel Durán       medico                   Panel, Laboratorio, Informes
+paola.medina     Paola Medina       medico                   Panel, Laboratorio, Informes
+daniel.ochoa     Daniel Ochoa       medico                   Panel, Laboratorio, Informes
+laura.reyes      Laura Reyes        medico                   Panel, Laboratorio, Informes
+tomas.leal       Tomás Leal         medico                   Panel, Laboratorio, Informes
+
+Para probar permisos basta con: admin (todo), helen.rostova (médico), auditor (auditor).

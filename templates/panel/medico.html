@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, iniciales, PRIORIDAD, ESTADO_RESULTADO, TIPO_CONSULTA %}
+{% block title %}Espacio de trabajo clínico{% endblock %}
+{% block acciones %}
+  {% if enc %}
+  <div class="patient-badge">PACIENTE ACTIVO: <b>{{ enc.paciente }}</b> <span class="muted">({{ enc.edad }} años)</span></div>
+  {% endif %}
+  {% if tiene_rol('admin_clinico') %}<a class="btn sec" href="{{ url_for('panel.inicio', vista='general') }}">{{ icono('rendimiento', 16) }} Tablero general</a>{% endif %}
+  <a class="btn" href="{{ url_for('consultas.nueva') }}">{{ icono('mas', 16) }} Nueva consulta</a>
+{% endblock %}
+{% block content %}
+{% if not enc %}
+  <section class="card">
+    <div class="vacio">No tiene consultas abiertas. Abra una consulta para trabajar con el copiloto.</div>
+  </section>
+{% else %}
+<div class="workspace">
+  <div class="stack">
+    {% if mias|length > 1 %}
+    <section class="card">
+      <div class="card-head"><h2 class="card-title">Mis consultas abiertas</h2><span class="card-sub">{{ mias|length }} en curso</span></div>
+      <div class="lista-consultas">
+        {% for m in mias %}
+        <a class="item-consulta {{ 'activo' if m.id_encuentro == enc.id_encuentro }}" href="{{ url_for('panel.inicio', encuentro=m.id_encuentro) }}">
+          <span><b>{{ m.paciente }}</b><br><span class="muted small">{{ TIPO_CONSULTA[m.tipo] }} · {{ m.fecha_inicio|fechahora }} · {{ m.motivo|truncate(60) }}</span></span>
+          <span class="chips">
+            {% if m.recomendaciones_pendientes %}{{ badge('amber', m.recomendaciones_pendientes ~ ' por decidir') }}{% endif %}
+            {% if m.pruebas_pendientes %}{{ badge('blue', m.pruebas_pendientes ~ ' estudio(s)') }}{% endif %}
+          </span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="ficha">
+        <div class="ficha-id">
+          <span class="avatar lg">{{ iniciales(enc.paciente) }}</span>
+          <div>
+            <div class="ficha-nombre">{{ enc.paciente }}</div>
+            <div class="ficha-meta">CURP {{ enc.curp }} · {{ enc.sexo|sexo }}, {{ enc.edad }} años · {{ TIPO_CONSULTA[enc.tipo] }} desde {{ enc.fecha_inicio|fechahora }}</div>
+          </div>
+        </div>
+        {% if riesgo in ('alta', 'critica') %}{{ badge('red', 'Riesgo ' ~ PRIORIDAD[riesgo]|lower) }}
+        {% elif riesgo %}{{ badge('amber', 'Riesgo ' ~ PRIORIDAD[riesgo]|lower) }}
+        {% else %}{{ badge('teal', 'Sin alertas pendientes') }}{% endif %}
+      </div>
+      <div class="divider"></div>
+      {% if labs %}
+      <div class="kpis">
+        {% for l in labs %}
+        <div class="kpi">
+          <span class="kpi-label">{{ l.prueba }}</span>
+          <span class="kpi-value">{{ l.valor_numerico|num if l.valor_numerico is not none else l.valor_texto }} <span class="small muted">{{ l.unidad or '' }}</span></span>
+          <span class="kpi-note {{ l.estado }}">{{ ESTADO_RESULTADO[l.estado] }} · {{ l.fecha_resultado|fecha }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted small">Sin resultados de laboratorio. Los signos vitales se integrarán con MongoDB en una fase posterior.</p>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">Notas de la consulta</h2>
+        <a class="link small" href="{{ url_for('consultas.detalle', id_encuentro=enc.id_encuentro) }}">Ver consulta completa →</a>
+      </div>
+      <form method="post" action="{{ url_for('consultas.editar', id_encuentro=enc.id_encuentro) }}" class="stack" data-validar novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="tipo" value="{{ enc.tipo }}">
+        <div class="field">
+          <label for="motivo">Motivo</label>
+          <input id="motivo" name="motivo" value="{{ enc.motivo }}" required minlength="5" maxlength="1000" data-mensaje="El motivo necesita al menos 5 caracteres.">
+        </div>
+        <div class="field">
+          <label for="notas">Notas del médico</label>
+          <textarea id="notas" name="notas" maxlength="4000">{{ enc.notas or '' }}</textarea>
+        </div>
+        <div class="acciones-fila" style="justify-content: space-between">
+          <span class="small muted">{{ diagnosticos|length }} diagnóstico(s) · {{ prescripciones|length }} prescripción(es)</span>
+          <button class="btn" type="submit">Guardar notas</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <aside class="copilot" aria-label="Copiloto clínico">
+    <div class="copilot-head">
+      <span class="bot">{{ icono('copiloto', 18) }}</span>
+      <div>
+        <div class="copilot-title">MedAssist AI Copiloto</div>
+        <div class="copilot-status">REGLAS ACTIVAS</div>
+      </div>
+    </div>
+    <div class="copilot-body">
+      <div class="scan-label">CONTEXTO CLÍNICO DEL ENCUENTRO</div>
+      <div class="scan-box">
+        {% for fuente, n in resumen_contexto|dictsort %}
+          {{ badge('blue sin-punto', n ~ ' ' ~ fuente|replace('_', ' ')) }}
+        {% else %}
+          Sin datos clínicos registrados todavía.
+        {% endfor %}
+      </div>
+      <form method="post" action="{{ url_for('consultas.evaluar', id_encuentro=enc.id_encuentro) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="volver" value="panel">
+        <button class="btn sec bloque" type="submit">{{ icono('refrescar', 16) }} Evaluar reglas ahora</button>
+      </form>
+      <div class="scan-label">RECOMENDACIONES ({{ pendientes|length }} PENDIENTE{{ 'S' if pendientes|length != 1 }})</div>
+      {% for rec in recomendaciones %}
+        {% with puede_decidir=puede_modificar, volver='panel' %}{% include "consultas/_recomendacion.html" %}{% endwith %}
+      {% else %}
+        <div class="vacio small">El copiloto no tiene recomendaciones para esta consulta.</div>
+      {% endfor %}
+    </div>
+  </aside>
+</div>
+{% endif %}
+{% endblock %}

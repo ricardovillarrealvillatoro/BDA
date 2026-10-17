@@ -1,0 +1,12 @@
+{% with mensajes = get_flashed_messages(with_categories=true) %}
+{% if mensajes %}
+<div class="flashes" role="status" aria-live="polite">
+  {% for categoria, mensaje in mensajes %}
+  <div class="flash {{ categoria if categoria in ('success', 'error', 'warning') else 'success' }}">
+    <span>{{ mensaje }}</span>
+    <button type="button" data-cerrar aria-label="Cerrar mensaje">×</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}

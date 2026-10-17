@@ -1,0 +1,60 @@
+{# Tarjeta de una recomendación del copiloto con su evidencia y el formulario de decisión.
+   Variables: rec, puede_decidir, volver ('panel' o 'consulta') #}
+{% from "partials/_macros.html" import badge, PRIORIDAD, DECISION %}
+<article class="suggestion {{ rec.prioridad_asignada if not rec.decision else 'decidida' }}" id="rec-{{ rec.id_recomendacion }}">
+  <div class="suggestion-kicker">
+    <span>{{ rec.regla }} v{{ rec.numero_version }} · {{ rec.regla_nombre|upper }}</span>
+    {{ badge(rec.prioridad_asignada, PRIORIDAD[rec.prioridad_asignada]) }}
+  </div>
+  <p class="suggestion-text">{{ rec.texto_generado }}</p>
+  <p class="suggestion-meta">
+    Protocolo {{ rec.protocolo }} versión {{ rec.version_protocolo }} · {{ rec.fecha_hora|fechahora }}
+    {% if rec.farmaco_objetivo %} · Fármaco a {{ 'evitar' if rec.tipo_accion == 'evitar' else 'sugerir' }}: <b>{{ rec.farmaco_objetivo }}</b>{% endif %}
+  </p>
+  {% if rec.evidencia %}
+  <div class="table-wrap">
+    <table class="evidencia" aria-label="Datos usados por la regla">
+      <thead><tr><th>Condición</th><th>Valor observado</th><th>Origen</th><th></th></tr></thead>
+      <tbody>
+      {% for e in rec.evidencia %}
+        <tr>
+          <td><span class="mono">{{ e.variable }} {{ e.operador }} {{ e.umbral or '' }} {{ e.unidad_umbral or '' }}</span>
+            {% if e.operador_logico == 'AL_MENOS' %}<br><span class="muted">al menos {{ e.min_cumplidas }}</span>{% elif e.orden_grupo > 1 or e.operador_logico == 'OR' %}<br><span class="muted">grupo {{ e.operador_logico }}</span>{% endif %}</td>
+          <td>{{ e.valor_observado or '—' }} {{ e.unidad or '' }}</td>
+          <td class="muted">{{ e.origen }}</td>
+          <td>{% if e.cumplida %}<span class="ok" title="Cumple">✓</span>{% else %}<span class="no" title="No cumple">—</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if rec.decision %}
+  <div class="decision-resuelta">
+    {{ badge(rec.decision, DECISION[rec.decision]) }} por {{ rec.medico_decide }} · {{ rec.fecha_decision|fechahora }}<br>
+    <b>Justificación:</b> {{ rec.justificacion }}
+    {% if rec.accion_final %}<br><b>Acción final:</b> {{ rec.accion_final }}{% endif %}
+  </div>
+  {% elif puede_decidir %}
+  <form class="decision-form" method="post" action="{{ url_for('consultas.decidir', id_recomendacion=rec.id_recomendacion) }}" data-validar data-decision novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="volver" value="{{ volver }}">
+    <div class="decision-tipos" role="radiogroup" aria-label="Decisión">
+      <input type="radio" id="ac-{{ rec.id_recomendacion }}" name="tipo" value="aceptada" required>
+      <label class="aceptar" for="ac-{{ rec.id_recomendacion }}">Aceptar</label>
+      <input type="radio" id="mo-{{ rec.id_recomendacion }}" name="tipo" value="modificada">
+      <label class="modificar" for="mo-{{ rec.id_recomendacion }}">Modificar</label>
+      <input type="radio" id="re-{{ rec.id_recomendacion }}" name="tipo" value="rechazada">
+      <label class="rechazar" for="re-{{ rec.id_recomendacion }}">Rechazar</label>
+    </div>
+    <textarea name="justificacion" placeholder="Justificación (obligatoria, mínimo 10 caracteres)" required minlength="10" maxlength="2000"
+              aria-label="Justificación" data-mensaje="Escriba una justificación de al menos 10 caracteres."></textarea>
+    <textarea name="accion_final" placeholder="Acción final que se tomó en lugar de la sugerencia" maxlength="2000" hidden
+              aria-label="Acción final" data-mensaje="Describa la acción final."></textarea>
+    <button class="btn" type="submit">Registrar decisión</button>
+  </form>
+  {% else %}
+  <p class="decision-resuelta">Pendiente de decisión del médico tratante.</p>
+  {% endif %}
+</article>

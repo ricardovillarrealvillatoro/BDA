@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, iniciales, boton_post, ESTADO_CONSULTA, TIPO_CONSULTA %}
+{% block title %}Médico{% endblock %}
+{% block acciones %}
+  {% if tiene_rol('admin_clinico') %}
+    <a class="btn sec" href="{{ url_for('medicos.editar', id_medico=m.id_medico) }}">{{ icono('editar', 16) }} Editar</a>
+    {% if m.activo %}
+      {{ boton_post(url_for('medicos.baja', id_medico=m.id_medico), 'Desactivar cuenta', 'btn peligro',
+                    '¿Desactivar la cuenta de este médico? Ya no podrá iniciar sesión; su historial se conserva.') }}
+    {% else %}
+      {{ boton_post(url_for('medicos.reactivar', id_medico=m.id_medico), 'Reactivar cuenta', 'btn') }}
+    {% endif %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="ficha">
+    <div class="ficha-id">
+      <span class="avatar lg">{{ iniciales(m.nombre_completo) }}</span>
+      <div>
+        <div class="ficha-nombre">Dr(a). {{ m.nombre_completo }}</div>
+        <div class="ficha-meta">Cédula {{ m.cedula_profesional }} · usuario {{ m.username }} · {{ m.email }}</div>
+      </div>
+    </div>
+    {{ badge('activo', 'Activo') if m.activo else badge('inactivo', 'Inactivo') }}
+  </div>
+  <div class="kpis">
+    <div class="kpi"><span class="kpi-label">Consultas</span><span class="kpi-value">{{ m.consultas }}</span></div>
+    <div class="kpi"><span class="kpi-label">Abiertas</span><span class="kpi-value">{{ m.abiertas }}</span></div>
+    <div class="kpi"><span class="kpi-label">Especialidades</span><span class="kpi-value">{{ especialidades|length }}</span></div>
+  </div>
+  <div class="chips">
+    {% for e in especialidades %}{{ badge('teal' if e.es_principal else 'cerrado', e.nombre ~ (' · principal' if e.es_principal else '') ~ ' · ' ~ e.cedula_especialidad) }}{% else %}<span class="muted small">Sin especialidad registrada.</span>{% endfor %}
+  </div>
+</section>
+
+{% if concordancia %}
+<section class="card">
+  <div class="card-head"><h2 class="card-title">Concordancia con el copiloto</h2><span class="card-sub">v_concordancia</span></div>
+  <div class="table-wrap"><table class="tabla">
+    <thead><tr><th>Regla</th><th class="num">Decididas</th><th class="num">Aceptadas</th><th class="num">Modificadas</th><th class="num">Rechazadas</th><th class="num">PGC</th></tr></thead>
+    <tbody>{% for c in concordancia %}<tr><td>{{ c.regla }} v{{ c.numero_version }} · {{ c.regla_nombre }}</td><td class="num">{{ c.decididas }}</td><td class="num">{{ c.aceptadas }}</td><td class="num">{{ c.modificadas }}</td><td class="num">{{ c.rechazadas }}</td><td class="num">{{ c.pgc|num }} %</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+
+<section class="card">
+  <div class="card-head"><h2 class="card-title">Historial de consultas</h2><span class="card-sub">Últimas 30 · v_historial_consultas_medico</span></div>
+  <div class="table-wrap"><table class="tabla">
+    <thead><tr><th>Fecha</th><th>Paciente</th><th>Tipo</th><th>Diagnóstico principal</th><th>Estado</th></tr></thead>
+    <tbody>
+    {% for c in historial %}
+      <tr>
+        <td class="small"><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=c.id_encuentro) }}">{{ c.fecha_inicio|fechahora }}</a></td>
+        <td>{{ c.paciente }}</td>
+        <td>{{ TIPO_CONSULTA[c.tipo] }}</td>
+        <td class="small">{% if c.dx_principal %}<span class="mono">{{ c.dx_principal }}</span> {{ c.dx_descripcion }}{% else %}—{% endif %}</td>
+        <td>{{ badge(c.estado, ESTADO_CONSULTA[c.estado]) }}</td>
+      </tr>
+    {% else %}<tr><td colspan="5"><div class="vacio">Sin consultas registradas.</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

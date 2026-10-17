@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge %}
+{% block title %}Rendimiento del copiloto{% endblock %}
+{% block subtitulo %}<div class="sub">Concordancia médico–copiloto (v_concordancia), indicadores (v_indicadores_atencion) y carga por especialidad (v_consultas_por_especialidad)</div>{% endblock %}
+{% block content %}
+{% set total_dec = totales.aceptadas + totales.modificadas + totales.rechazadas %}
+<section class="card">
+  <div class="kpis">
+    <div class="kpi"><span class="kpi-label">PGC global</span><span class="kpi-value">{{ ind.pgc_global|num }} %</span><span class="kpi-note">aceptadas + ½ modificadas</span></div>
+    <div class="kpi"><span class="kpi-label">Recomendaciones</span><span class="kpi-value">{{ ind.recomendaciones }}</span><span class="kpi-note">{{ ind.decisiones }} con decisión</span></div>
+    <div class="kpi"><span class="kpi-label">Aceptadas</span><span class="kpi-value">{{ totales.aceptadas }}</span><span class="kpi-note normal">{{ (100 * totales.aceptadas / total_dec)|round(1) if total_dec else 0 }} %</span></div>
+    <div class="kpi"><span class="kpi-label">Modificadas</span><span class="kpi-value">{{ totales.modificadas }}</span><span class="kpi-note fuera_rango">{{ (100 * totales.modificadas / total_dec)|round(1) if total_dec else 0 }} %</span></div>
+    <div class="kpi"><span class="kpi-label">Rechazadas</span><span class="kpi-value">{{ totales.rechazadas }}</span><span class="kpi-note critico">{{ (100 * totales.rechazadas / total_dec)|round(1) if total_dec else 0 }} %</span></div>
+  </div>
+  {% if total_dec %}
+  <div class="barra-apilada" role="img" aria-label="Distribución de decisiones">
+    <span class="seg aceptada" style="width: {{ 100 * totales.aceptadas / total_dec }}%"></span>
+    <span class="seg modificada" style="width: {{ 100 * totales.modificadas / total_dec }}%"></span>
+    <span class="seg rechazada" style="width: {{ 100 * totales.rechazadas / total_dec }}%"></span>
+  </div>
+  <div class="leyenda small"><span class="pt aceptada"></span>Aceptadas <span class="pt modificada"></span>Modificadas <span class="pt rechazada"></span>Rechazadas</div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <div class="card-head"><h2 class="card-title">Concordancia por regla y versión</h2><span class="card-sub">Una regla con PGC bajo y muchos rechazos pasa a revisión</span></div>
+  <div class="table-wrap"><table class="tabla">
+    <thead><tr><th>Regla</th><th>Versión</th><th class="num">Decididas</th><th style="width: 38%">Distribución</th><th class="num">PGC</th></tr></thead>
+    <tbody>
+    {% for r in por_regla %}
+      <tr>
+        <td><b>{{ r.regla }}</b> · {{ r.regla_nombre }}</td>
+        <td>v{{ r.numero_version }} {{ badge({'activa': 'activo', 'en_revision': 'amber', 'retirada': 'inactivo'}.get(r.estado_version, 'cerrado'), r.estado_version|replace('_', ' ')) }}</td>
+        <td class="num">{{ r.decididas }}</td>
+        <td>
+          <div class="barra-apilada fina" title="{{ r.aceptadas }} aceptadas · {{ r.modificadas }} modificadas · {{ r.rechazadas }} rechazadas">
+            <span class="seg aceptada" style="width: {{ 100 * r.aceptadas / r.decididas }}%"></span>
+            <span class="seg modificada" style="width: {{ 100 * r.modificadas / r.decididas }}%"></span>
+            <span class="seg rechazada" style="width: {{ 100 * r.rechazadas / r.decididas }}%"></span>
+          </div>
+        </td>
+        <td class="num"><b>{{ r.pgc|num }} %</b></td>
+      </tr>
+    {% else %}<tr><td colspan="5"><div class="vacio">Todavía no hay decisiones registradas.</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Concordancia por médico</h2></div>
+    <div class="barras">
+      {% for m in por_medico %}
+      <div class="barra-fila">
+        <span class="barra-etq">{{ m.medico }}</span>
+        <span class="barra-pista"><span class="barra-valor" style="width: {{ m.pgc }}%"></span></span>
+        <span class="barra-num">{{ m.pgc|num }} % <span class="muted">({{ m.decididas }})</span></span>
+      </div>
+      {% else %}<div class="vacio">Sin datos.</div>{% endfor %}
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Consultas por especialidad</h2><span class="card-sub">Incluye especialidades sin médicos (LEFT JOIN)</span></div>
+    {% set max_c = (especialidades|map(attribute='consultas')|max) if especialidades else 0 %}
+    <div class="barras">
+      {% for e in especialidades %}
+      <div class="barra-fila">
+        <span class="barra-etq">{{ e.especialidad }} <span class="muted small">· {{ e.medicos }} méd.</span></span>
+        <span class="barra-pista"><span class="barra-valor azul" style="width: {{ (100 * e.consultas / max_c) if max_c else 0 }}%"></span></span>
+        <span class="barra-num">{{ e.consultas }} <span class="muted">({{ e.urgencias }} urg.)</span></span>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

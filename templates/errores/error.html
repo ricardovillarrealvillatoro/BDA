@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% macro cuerpo() %}
+<div class="error-box">
+  <div class="error-code">{{ codigo }}</div>
+  <h2 class="card-title">{{ titulo }}</h2>
+  <p class="muted">{{ mensaje }}</p>
+  <a class="btn" href="{{ url_for('panel.inicio') if g.user else url_for('auth.login') }}">Volver al inicio</a>
+</div>
+{% endmacro %}
+{% block content %}{{ cuerpo() }}{% endblock %}
+{% block publico %}<div class="auth-wrap">{{ cuerpo() }}</div>{% endblock %}

@@ -1,0 +1,981 @@
+.doctor-home {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  align-items: flex-start;
+  position: relative;
+  background-color: #f8fafc;
+}
+
+.doctor-home .screen-body {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.doctor-home .sidebar {
+  width: 240px;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid;
+  border-color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  align-self: stretch;
+}
+
+.doctor-home .sidebar-top {
+  gap: 28px;
+  width: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  align-self: stretch;
+}
+
+.doctor-home .div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .logo-icon {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: #0d9488;
+  border-radius: 8px;
+}
+
+.doctor-home .vector-wrapper {
+  position: relative;
+  width: 18px;
+  height: 18px;
+}
+
+.doctor-home .vector {
+  position: absolute;
+  width: 97.23%;
+  height: 97.23%;
+  top: 2.77%;
+  left: 2.77%;
+}
+
+.doctor-home .logo-text {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .text-wrapper {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-2 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #0d9488;
+  font-size: 10px;
+  letter-spacing: 0.05px;
+  line-height: normal;
+}
+
+.doctor-home .div-2 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.doctor-home .text-wrapper-3 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #94a3b8;
+  font-size: 10px;
+  letter-spacing: 0.1px;
+  line-height: normal;
+}
+
+.doctor-home .nav-item-home {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+  background-color: #f0fdfa;
+  border-radius: 8px;
+}
+
+.doctor-home .img {
+  position: absolute;
+  width: 93.06%;
+  height: 97.23%;
+  top: 2.77%;
+  left: 6.94%;
+}
+
+.doctor-home .text-wrapper-4 {
+  position: relative;
+  flex: 1;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #0f766e;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .div-3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+  border-radius: 8px;
+}
+
+.doctor-home .text-wrapper-5 {
+  position: relative;
+  flex: 1;
+  margin-top: -1px;
+  font-family: "Geist-Medium", Helvetica;
+  font-weight: 500;
+  color: #475569;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .vector-2 {
+  position: absolute;
+  width: 88.89%;
+  height: 97.23%;
+  top: 2.77%;
+  left: 11.11%;
+}
+
+.doctor-home .admin-header {
+  align-items: center;
+  justify-content: space-around;
+  padding: 0px 0px 4px 8px;
+  display: flex;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.doctor-home .vector-3 {
+  position: absolute;
+  width: 97.23%;
+  height: 97.03%;
+  top: 2.97%;
+  left: 2.77%;
+}
+
+.doctor-home .sidebar-bottom {
+  gap: 12px;
+  width: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  align-self: stretch;
+}
+
+.doctor-home .line {
+  margin-top: -1px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  height: 1px;
+  object-fit: cover;
+}
+
+.doctor-home .user-profile {
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  position: relative;
+}
+
+.doctor-home .rectangle {
+  width: 36px;
+  height: 36px;
+  position: relative;
+  object-fit: cover;
+}
+
+.doctor-home .user-details {
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  flex-grow: 1;
+  display: flex;
+  position: relative;
+}
+
+.doctor-home .text-wrapper-6 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 13px;
+  letter-spacing: 0;
+  line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.doctor-home .text-wrapper-7 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-Regular", Helvetica;
+  font-weight: 400;
+  color: #475569;
+  font-size: 11px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .main-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+.doctor-home .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  align-self: stretch;
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid;
+  border-color: #e2e8f0;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .header-left {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .text-wrapper-8 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 20px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .patient-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .text-wrapper-9 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #475569;
+  font-size: 11px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-10 {
+  color: #0f766e;
+  font-size: 13px;
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .workspace-split {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px;
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.doctor-home .left-workspace {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+.doctor-home .patient-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  align-self: stretch;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid;
+  border-color: #e2e8f0;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .div-4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.doctor-home .avatar-and-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .rectangle-2 {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  object-fit: cover;
+}
+
+.doctor-home .frame {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .p {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-Regular", Helvetica;
+  font-weight: 400;
+  color: #475569;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  position: relative;
+  flex: 0 0 auto;
+  background-color: #fef2f2;
+  border-radius: 100px;
+}
+
+.doctor-home .ellipse {
+  background-color: #ef4444;
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.doctor-home .text-wrapper-11 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #ef4444;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .line-2 {
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  height: 1px;
+  object-fit: cover;
+}
+
+.doctor-home .vitals-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.doctor-home .frame-2 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px;
+  position: relative;
+  flex: 1;
+  flex-grow: 1;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.doctor-home .text-wrapper-12 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #475569;
+  font-size: 11px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-13 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 18px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-14 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-Medium", Helvetica;
+  font-weight: 500;
+  color: #d97706;
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-15 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-Medium", Helvetica;
+  font-weight: 500;
+  color: #0d9488;
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-16 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-Medium", Helvetica;
+  font-weight: 500;
+  color: #ef4444;
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .notes-panel {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  flex: 1;
+  flex-grow: 1;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid;
+  border-color: #e2e8f0;
+  display: flex;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+}
+
+.doctor-home .img-wrapper {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.doctor-home .vector-4 {
+  position: absolute;
+  width: 97.92%;
+  height: 97.92%;
+  top: 2.08%;
+  left: 2.08%;
+}
+
+.doctor-home .text-wrapper-17 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 15px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-18 {
+  position: relative;
+  width: fit-content;
+  font-family: "Geist-Regular", Helvetica;
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 11px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .notes-textarea {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px;
+  flex: 1;
+  flex-grow: 1;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  display: flex;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+}
+
+.doctor-home .text-wrapper-19 {
+  position: relative;
+  align-self: stretch;
+  margin-top: -1px;
+  font-family: "Geist-Regular", Helvetica;
+  font-weight: 400;
+  color: #0f172a;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: 21px;
+}
+
+.doctor-home .text-wrapper-20 {
+  width: fit-content;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #0f766e;
+  font-size: 12px;
+  position: relative;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .save-btn {
+  display: inline-flex;
+  align-items: flex-start;
+  padding: 10px 20px;
+  position: relative;
+  flex: 0 0 auto;
+  background-color: #0d9488;
+  border-radius: 8px;
+}
+
+.doctor-home .text-wrapper-21 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .copilot-panel {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  align-items: flex-start;
+  position: relative;
+  align-self: stretch;
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid;
+  border-color: #e2e8f0;
+}
+
+.doctor-home .chatbot-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+  background-color: #0d9488;
+}
+
+.doctor-home .bot-avatar {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: #ccfbf1;
+  border-radius: 16px;
+}
+
+.doctor-home .vector-5 {
+  position: absolute;
+  width: 97.22%;
+  height: 97.23%;
+  top: 2.77%;
+  left: 2.78%;
+}
+
+.doctor-home .text-wrapper-22 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .frame-3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.doctor-home .ellipse-2 {
+  background-color: #4ade80;
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.doctor-home .text-wrapper-23 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #ccfbf1;
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .chat-thread {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.doctor-home .escaneando-contexto {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #94a3b8;
+  font-size: 11px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .analizando-visi-n-wrapper {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.doctor-home .analizando-visi-n {
+  flex: 1;
+  margin-top: -1px;
+  font-family: "Geist-Regular", Helvetica;
+  font-weight: 400;
+  color: #475569;
+  font-size: 13px;
+  position: relative;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .copilot-suggestion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+  background-color: #f0fdfa;
+  border-radius: 8px;
+  border: 1px solid;
+  border-color: #0d9488;
+}
+
+.doctor-home .vector-6 {
+  position: absolute;
+  width: 93.76%;
+  height: 97.93%;
+  top: 2.07%;
+  left: 6.24%;
+}
+
+.doctor-home .text-wrapper-24 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #0f766e;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .frame-4 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.doctor-home .text-wrapper-25 {
+  position: relative;
+  width: 368px;
+  margin-top: -1px;
+  margin-right: -28px;
+  font-family: "Geist-Bold", Helvetica;
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 15px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .text-wrapper-26 {
+  position: relative;
+  width: 748px;
+  margin-right: -408px;
+  font-family: "Geist-Regular", Helvetica;
+  font-weight: 400;
+  color: #475569;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 16.8px;
+}
+
+.doctor-home .frame-5 {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 4px 0px 0px;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.doctor-home .accept-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  position: relative;
+  flex: 1;
+  flex-grow: 1;
+  background-color: #0d9488;
+  border-radius: 6px;
+}
+
+.doctor-home .vector-wrapper-2 {
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+
+.doctor-home .vector-7 {
+  position: absolute;
+  width: 90.47%;
+  height: 82.14%;
+  top: 17.86%;
+  left: 9.53%;
+}
+
+.doctor-home .text-wrapper-27 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 13px;
+  letter-spacing: 0;
+  line-height: normal;
+}
+
+.doctor-home .reject-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  position: relative;
+  flex: 1;
+  flex-grow: 1;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid;
+  border-color: #ef4444;
+}
+
+.doctor-home .vector-8 {
+  position: absolute;
+  width: 82.14%;
+  height: 82.14%;
+  top: 17.86%;
+  left: 17.86%;
+}
+
+.doctor-home .text-wrapper-28 {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-family: "Geist-SemiBold", Helvetica;
+  font-weight: 600;
+  color: #ef4444;
+  font-size: 13px;
+  letter-spacing: 0;
+  line-height: normal;
+}

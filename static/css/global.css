@@ -1,37 +1,51 @@
+/* Reset y base tipográfica compartida por todas las páginas */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+
 * {
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
 }
+
 html,
 body {
-  margin: 0px;
+  margin: 0;
   min-height: 100%;
 }
-button:focus-visible {
-  outline: 2px solid #4a90e2 !important;
-  outline: -webkit-focus-ring-color auto 5px !important;
+
+body {
+  font-family: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;
+  background: #f8fafc;
 }
+
 a {
   text-decoration: none;
+  color: inherit;
 }
 
-@font-face {
-  font-family: "Geist-Bold";
-  src: local("Geist-Bold");
+strong,
+b {
+  font-weight: 600;
 }
 
-@font-face {
-  font-family: "Geist-SemiBold";
-  src: local("Geist-SemiBold");
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
 }
 
-@font-face {
-  font-family: "Geist-Medium";
-  src: local("Geist-Medium");
+:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
 }
 
-@font-face {
-  font-family: "Geist-Regular";
-  src: local("Geist-Regular");
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

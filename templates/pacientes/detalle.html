@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, iniciales, boton_post, ESTADO_CONSULTA, TIPO_CONSULTA %}
+{% block title %}Expediente del paciente{% endblock %}
+{% block acciones %}
+  {% if p.activo %}
+  <a class="btn" href="{{ url_for('consultas.nueva', paciente=p.id_paciente) }}">{{ icono('mas', 16) }} Abrir consulta</a>
+  <a class="btn sec" href="{{ url_for('pacientes.editar', id_paciente=p.id_paciente) }}">{{ icono('editar', 16) }} Editar</a>
+  {% if tiene_rol('admin_clinico') %}
+    {{ boton_post(url_for('pacientes.baja', id_paciente=p.id_paciente), 'Dar de baja', 'btn peligro',
+                  '¿Dar de baja a este paciente? Si no tiene historial clínico se eliminará; si lo tiene, se conservará como inactivo.') }}
+  {% endif %}
+  {% elif tiene_rol('admin_clinico') %}
+    {{ boton_post(url_for('pacientes.reactivar', id_paciente=p.id_paciente), 'Reactivar paciente', 'btn') }}
+  {% endif %}
+{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="ficha">
+    <div class="ficha-id">
+      <span class="avatar lg">{{ iniciales(p.nombre ~ ' ' ~ p.apellido_paterno) }}</span>
+      <div>
+        <div class="ficha-nombre">{{ p.nombre }} {{ p.apellido_paterno }} {{ p.apellido_materno or '' }}</div>
+        <div class="ficha-meta">CURP {{ p.curp }} · {{ p.sexo|sexo }}, {{ p.edad }} años</div>
+      </div>
+    </div>
+    {{ badge('activo', 'Activo') if p.activo else badge('inactivo', 'Dado de baja el ' ~ (p.fecha_baja|fecha)) }}
+  </div>
+  <dl class="dl">
+    <dt>Fecha de nacimiento</dt><dd>{{ p.fecha_nacimiento|fecha }}</dd>
+    <dt>Teléfono</dt><dd>{{ p.telefono or '—' }}</dd>
+    <dt>Correo</dt><dd>{{ p.email or '—' }}</dd>
+    <dt>Dirección</dt><dd>{{ p.direccion or '—' }}</dd>
+  </dl>
+</section>
+
+<div class="grid-3">
+  <section class="card">
+    <h2 class="card-title">Antecedentes</h2>
+    {% for a in antecedentes %}
+      <div><b>{{ a.tipo }}</b>{% if a.codigo_cie10 %} · <span class="mono">{{ a.codigo_cie10 }}</span>{% endif %}<br>
+        <span class="small">{{ a.descripcion }}{% if a.parentesco %} ({{ a.parentesco }}){% endif %}</span> {{ badge(a.estado == 'activo' and 'amber' or 'cerrado', a.estado) }}</div>
+    {% else %}<p class="muted small">Sin antecedentes registrados.</p>{% endfor %}
+  </section>
+  <section class="card">
+    <h2 class="card-title">Alergias</h2>
+    {% for a in alergias %}
+      <div><b>{{ a.sustancia }}</b> {{ badge(a.severidad == 'grave' and 'red' or 'amber', a.severidad) }}<br><span class="small muted">{{ a.reaccion or '' }}</span></div>
+    {% else %}<p class="muted small">Sin alergias conocidas.</p>{% endfor %}
+  </section>
+  <section class="card">
+    <h2 class="card-title">Medicación vigente</h2>
+    {% for m in medicacion %}
+      <div><b>{{ m.nombre_comercial }}</b> <span class="small">{{ m.dosis }} {{ m.codigo_ucum }} c/{{ m.frecuencia_horas }} h</span><br>
+        <span class="small muted">Desde {{ m.fecha_inicio|fecha }}{% if m.fecha_fin %} hasta {{ m.fecha_fin|fecha }}{% endif %}</span></div>
+    {% else %}<p class="muted small">Sin medicación vigente.</p>{% endfor %}
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head"><h2 class="card-title">Historial de consultas</h2><span class="card-sub">v_historial_consultas_medico</span></div>
+  <div class="table-wrap">
+    <table class="tabla">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Médico</th><th>Motivo</th><th>Diagnóstico principal</th><th>Estado</th></tr></thead>
+      <tbody>
+      {% for c in consultas %}
+        <tr>
+          <td class="small"><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=c.id_encuentro) }}">{{ c.fecha_inicio|fechahora }}</a></td>
+          <td>{{ TIPO_CONSULTA[c.tipo] }}</td>
+          <td>{{ c.medico }}<br><span class="small muted">{{ c.especialidad or '' }}</span></td>
+          <td class="small">{{ c.motivo|truncate(70) }}</td>
+          <td class="small">{% if c.dx_principal %}<span class="mono">{{ c.dx_principal }}</span> {{ c.dx_descripcion }}{% else %}—{% endif %}</td>
+          <td>{{ badge(c.estado, ESTADO_CONSULTA[c.estado]) }}</td>
+        </tr>
+      {% else %}<tr><td colspan="6"><div class="vacio">Este paciente aún no tiene consultas.</div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

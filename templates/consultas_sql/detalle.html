@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge %}
+{% block title %}{{ c.titulo }}{% endblock %}
+{% block subtitulo %}<div class="sub">{{ c.tipo }} · {{ c.pregunta }}</div>{% endblock %}
+{% block acciones %}<a class="btn sec" href="{{ url_for('consultas_sql.inicio') }}">Todas las consultas</a>{% endblock %}
+{% block content %}
+<div class="workspace">
+  <div class="stack">
+    <section class="card">
+      <div class="card-head"><h2 class="card-title">SQL</h2>{{ badge('teal sin-punto', c.tipo) }}</div>
+      <pre class="sql"><code>{{ c.sql }}</code></pre>
+      <p><b>Explicación.</b> {{ c.explicacion }}</p>
+      <p class="small muted"><b>Uso en la aplicación:</b> {{ c.uso }}</p>
+    </section>
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">Resultado de la ejecución</h2>
+        <span class="card-sub">{{ total }} fila{{ 's' if total != 1 }}{% if total > filas|length %} · se muestran {{ filas|length }}{% endif %} · {{ ahora()|fechahora }}</span>
+      </div>
+      <div class="table-wrap">
+        <table class="tabla">
+          <thead><tr>{% for col in columnas %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+          <tbody>
+          {% for fila in filas %}
+            <tr>{% for col in columnas %}{% set v = fila[col] %}<td class="small {{ 'num' if v is number }}">{% if v is none %}<span class="muted">NULL</span>{% elif v is number %}{{ v|num }}{% else %}{{ v|string|truncate(70) }}{% endif %}</td>{% endfor %}</tr>
+          {% else %}<tr><td colspan="{{ columnas|length }}"><div class="vacio">La consulta no devolvió filas.</div></td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+  <aside class="card">
+    <h2 class="card-title">Catálogo</h2>
+    <nav class="lista-consultas catalogo">
+      {% for x in consultas %}
+      <a class="item-consulta {{ 'activo' if x.id == c.id }}" href="{{ url_for('consultas_sql.detalle', id_consulta=x.id) }}">
+        <span class="small muted">{{ x.tipo }}</span><br>{{ x.titulo }}
+      </a>
+      {% endfor %}
+    </nav>
+  </aside>
+</div>
+{% endblock %}

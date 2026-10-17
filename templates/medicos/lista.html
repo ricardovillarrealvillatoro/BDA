@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, paginacion %}
+{% block title %}Médicos{% endblock %}
+{% block acciones %}{% if tiene_rol('admin_clinico') %}<a class="btn" href="{{ url_for('medicos.nuevo') }}">{{ icono('mas', 16) }} Registrar médico</a>{% endif %}{% endblock %}
+{% block content %}
+<section class="card">
+  <form class="filtros" method="get">
+    <div class="field grow">
+      <label for="q">Buscar</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="Nombre, usuario o cédula" maxlength="80">
+    </div>
+    <div class="field">
+      <label for="especialidad">Especialidad</label>
+      <select id="especialidad" name="especialidad">
+        <option value="">Todas</option>
+        {% for e in especialidades %}<option value="{{ e.id_especialidad }}" {{ 'selected' if especialidad == e.id_especialidad|string }}>{{ e.nombre }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="estado">Mostrar</label>
+      <select id="estado" name="estado">
+        {% for v, t in [('activos','Activos'), ('inactivos','Inactivos'), ('todos','Todos')] %}<option value="{{ v }}" {{ 'selected' if estado == v }}>{{ t }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="btn sec" type="submit">{{ icono('buscar', 16) }} Filtrar</button>
+  </form>
+  <div class="table-wrap">
+    <table class="tabla">
+      <thead><tr><th>Médico</th><th>Cédula</th><th>Especialidad principal</th><th class="num">Consultas</th><th class="num">Abiertas</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+      {% for m in medicos %}
+        <tr>
+          <td><a class="link" href="{{ url_for('medicos.detalle', id_medico=m.id_medico) }}">{{ m.nombre_completo }}</a><br><span class="small muted">{{ m.username }}</span></td>
+          <td class="mono">{{ m.cedula_profesional }}</td>
+          <td>{{ m.especialidad or '—' }}</td>
+          <td class="num">{{ m.consultas }}</td>
+          <td class="num">{{ m.abiertas }}</td>
+          <td>{{ badge('activo', 'Activo') if m.activo else badge('inactivo', 'Inactivo') }}</td>
+          <td class="acciones">{% if tiene_rol('admin_clinico') %}<a class="btn-icon" href="{{ url_for('medicos.editar', id_medico=m.id_medico) }}" title="Editar" aria-label="Editar">{{ icono('editar', 15) }}</a>{% endif %}</td>
+        </tr>
+      {% else %}<tr><td colspan="7"><div class="vacio">No hay médicos con esos filtros.</div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ paginacion(total, pagina, tam, 'medicos.lista') }}
+</section>
+{% endblock %}

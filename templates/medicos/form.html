@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import campo, seleccion %}
+{% block title %}{{ 'Registrar médico' if modo == 'nuevo' else 'Editar médico' }}{% endblock %}
+{% block content %}
+<section class="card" style="max-width: 860px">
+  <form method="post" data-validar novalidate class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if modo == 'nuevo' %}
+    <h2 class="card-title">Cuenta de acceso</h2>
+    <div class="form-grid">
+      {{ campo('username', 'Usuario', f, errores, requerido=True, clase='full', ayuda='Minúsculas, números, punto o guion bajo. Ejemplo: ana.lopez',
+               attrs='maxlength="50" pattern="[a-z0-9._]{3,50}" autocomplete="off" data-mensaje="Use minúsculas, números, punto o guion bajo (3 a 50)."') }}
+      {{ campo('password', 'Contraseña', f, errores, tipo='password', requerido=True, ayuda='Mínimo 10 caracteres con letras y números.',
+               attrs='minlength="10" maxlength="128" autocomplete="new-password" data-mensaje="Mínimo 10 caracteres con letras y números."') }}
+      {{ campo('password2', 'Confirmar contraseña', f, errores, tipo='password', requerido=True,
+               attrs='minlength="10" maxlength="128" autocomplete="new-password" data-igual-a="password" data-mensaje="Las contraseñas no coinciden."') }}
+    </div>
+    <div class="divider"></div>
+    {% endif %}
+    <h2 class="card-title">Datos del médico</h2>
+    <div class="form-grid">
+      {{ campo('nombre', 'Nombre(s)', f, errores, requerido=True, attrs='maxlength="80" data-mensaje="Escriba el nombre."') }}
+      {{ campo('apellido_paterno', 'Apellido paterno', f, errores, requerido=True, attrs='maxlength="60" data-mensaje="Escriba el apellido paterno."') }}
+      {{ campo('apellido_materno', 'Apellido materno', f, errores, attrs='maxlength="60"') }}
+      {{ campo('email', 'Correo institucional', f, errores, tipo='email', requerido=True, attrs='maxlength="120" data-mensaje="Escriba un correo válido."') }}
+      {{ campo('cedula_profesional', 'Cédula profesional', f, errores, requerido=True,
+               attrs='maxlength="20" pattern="[0-9A-Z]{5,20}" data-mayusculas data-mensaje="De 5 a 20 dígitos o letras mayúsculas."') }}
+      {% set opciones_esp = [] %}{% for e in especialidades %}{% set _ = opciones_esp.append((e.id_especialidad, e.nombre)) %}{% endfor %}
+      {{ seleccion('id_especialidad', 'Especialidad principal', opciones_esp, f, errores, vacio='Sin especialidad') }}
+      {{ campo('cedula_especialidad', 'Cédula de la especialidad', f, errores,
+               ayuda='Obligatoria si elige una especialidad.' ,
+               attrs='maxlength="20" pattern="[0-9A-Z]{5,20}" data-mayusculas data-requerido-si="id_especialidad" data-mensaje="Capture la cédula de la especialidad (5 a 20 caracteres)."') }}
+    </div>
+    <div class="form-actions">
+      <a class="btn sec" href="{{ url_for('medicos.detalle', id_medico=medico.id_medico) if medico else url_for('medicos.lista') }}">Cancelar</a>
+      <button class="btn" type="submit">{{ 'Registrar médico' if modo == 'nuevo' else 'Guardar cambios' }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

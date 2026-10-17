@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, iniciales, ESTADO_CONSULTA, TIPO_CONSULTA %}
+{% block title %}Informes médicos{% endblock %}
+{% block subtitulo %}<div class="sub">Historial por paciente e informe de trazabilidad de cada consulta</div>{% endblock %}
+{% block content %}
+<section class="card">
+  <form class="filtros" method="get" data-validar novalidate>
+    <div class="field grow">
+      <label for="q">Buscar paciente</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="Nombre o CURP" required minlength="2" maxlength="80" data-mensaje="Escriba al menos 2 caracteres.">
+    </div>
+    <button class="btn" type="submit">{{ icono('buscar', 16) }} Buscar</button>
+  </form>
+  {% if q %}
+  <div class="table-wrap">
+    <table class="tabla">
+      <thead><tr><th>Paciente</th><th>CURP</th><th>Edad</th><th class="num">Consultas</th><th>Última</th></tr></thead>
+      <tbody>
+      {% for p in pacientes %}
+        <tr>
+          <td><a class="link" href="{{ url_for('reportes.inicio', q=q, paciente=p.id_paciente) }}">{{ p.nombre_completo }}</a>{% if not p.activo %} {{ badge('inactivo', 'Baja') }}{% endif %}</td>
+          <td class="mono">{{ p.curp }}</td>
+          <td>{{ p.edad }}</td>
+          <td class="num">{{ p.total_consultas }}</td>
+          <td class="small">{{ p.fecha_ultima_consulta|fecha if p.fecha_ultima_consulta else '—' }}</td>
+        </tr>
+      {% else %}<tr><td colspan="5"><div class="vacio">Ningún paciente coincide con «{{ q }}».</div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+{% if paciente %}
+<section class="card">
+  <div class="ficha">
+    <div class="ficha-id">
+      <span class="avatar lg">{{ iniciales(paciente.nombre ~ ' ' ~ paciente.apellido_paterno) }}</span>
+      <div>
+        <div class="ficha-nombre">{{ paciente.nombre }} {{ paciente.apellido_paterno }} {{ paciente.apellido_materno or '' }}</div>
+        <div class="ficha-meta">{{ paciente.curp }} · {{ paciente.sexo|sexo }} · {{ paciente.edad }} años</div>
+      </div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="tabla">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Médico</th><th>Diagnóstico principal</th><th class="num">Recomendaciones</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+      {% for c in consultas %}
+        <tr>
+          <td class="small">{{ c.fecha_inicio|fechahora }}</td>
+          <td>{{ TIPO_CONSULTA[c.tipo] }}</td>
+          <td>{{ c.medico }}</td>
+          <td class="small">{% if c.dx_principal %}<span class="mono">{{ c.dx_principal }}</span> {{ c.dx_descripcion }}{% else %}—{% endif %}</td>
+          <td class="num">{{ c.decididas }}/{{ c.recomendaciones }}</td>
+          <td>{{ badge(c.estado, ESTADO_CONSULTA[c.estado]) }}</td>
+          <td class="acciones"><a class="btn sec mini" href="{{ url_for('reportes.consulta', id_encuentro=c.id_encuentro) }}">{{ icono('informes', 14) }} Informe</a></td>
+        </tr>
+      {% else %}<tr><td colspan="7"><div class="vacio">El paciente no tiene consultas registradas.</div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

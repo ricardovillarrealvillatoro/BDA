@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import badge, PRIORIDAD, TIPO_CONSULTA %}
+{% block title %}Tablero clínico{% endblock %}
+{% block subtitulo %}<div class="sub">Indicadores en tiempo real · vista v_indicadores_atencion</div>{% endblock %}
+{% block acciones %}{% if g.user.id_medico %}<a class="btn sec" href="{{ url_for('panel.inicio') }}">{{ icono('inicio', 16) }} Mi espacio clínico</a>{% endif %}{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="kpis">
+    <div class="kpi"><span class="kpi-label">Pacientes activos</span><span class="kpi-value">{{ ind.pacientes_activos }}</span></div>
+    <div class="kpi"><span class="kpi-label">Médicos activos</span><span class="kpi-value">{{ ind.medicos_activos }}</span></div>
+    <div class="kpi"><span class="kpi-label">Consultas</span><span class="kpi-value">{{ ind.consultas_totales }}</span><span class="kpi-note">{{ ind.consultas_abiertas }} abiertas</span></div>
+    <div class="kpi"><span class="kpi-label">Duración promedio</span><span class="kpi-value">{{ ind.horas_promedio_consulta|num }} h</span></div>
+    <div class="kpi"><span class="kpi-label">Recomendaciones</span><span class="kpi-value">{{ ind.recomendaciones }}</span><span class="kpi-note">{{ ind.decisiones }} decididas</span></div>
+    <div class="kpi"><span class="kpi-label">Concordancia (PGC)</span><span class="kpi-value">{{ ind.pgc_global|num }} %</span></div>
+  </div>
+</section>
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Consultas abiertas</h2><span class="card-sub">v_pacientes_consultas_pendientes</span></div>
+    <div class="table-wrap">
+      <table class="tabla">
+        <thead><tr><th>Paciente</th><th>Médico</th><th>Desde</th><th class="num">Estudios</th><th class="num">Por decidir</th></tr></thead>
+        <tbody>
+        {% for p in pendientes %}
+          <tr>
+            <td><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=p.id_encuentro) }}">{{ p.paciente }}</a><br><span class="small muted">{{ TIPO_CONSULTA[p.tipo] }}</span></td>
+            <td>{{ p.medico }}</td>
+            <td class="small">{{ p.fecha_inicio|fechahora }}</td>
+            <td class="num">{{ p.pruebas_pendientes }}</td>
+            <td class="num">{{ p.recomendaciones_pendientes }}</td>
+          </tr>
+        {% else %}<tr><td colspan="5"><div class="vacio">No hay consultas abiertas.</div></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-head"><h2 class="card-title">Alertas activas</h2><span class="card-sub">v_alertas_activas · más urgentes primero</span></div>
+    <div class="table-wrap">
+      <table class="tabla">
+        <thead><tr><th>Paciente</th><th>Regla</th><th>Prioridad</th></tr></thead>
+        <tbody>
+        {% for a in alertas %}
+          <tr>
+            <td><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=a.id_encuentro) }}#rec-{{ a.id_recomendacion }}">{{ a.paciente }}</a></td>
+            <td>{{ a.regla }} · {{ a.regla_nombre }}</td>
+            <td>{{ badge(a.prioridad_asignada, PRIORIDAD[a.prioridad_asignada]) }}</td>
+          </tr>
+        {% else %}<tr><td colspan="3"><div class="vacio">Sin alertas pendientes.</div></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

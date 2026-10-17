@@ -1,0 +1,62 @@
+{# Controles de formulario con su mensaje de error del servidor #}
+{% macro campo(nombre, etiqueta, f, errores, tipo='text', requerido=False, ayuda=None, clase='', attrs='') -%}
+<div class="field {{ clase }} {% if errores.get(nombre) %}con-error{% endif %}">
+  <label for="{{ nombre }}">{{ etiqueta }}{% if requerido %} <span class="req">*</span>{% endif %}</label>
+  {% if tipo == 'textarea' %}
+  <textarea id="{{ nombre }}" name="{{ nombre }}" {% if requerido %}required{% endif %} {{ attrs|safe }}>{{ f.get(nombre) or '' }}</textarea>
+  {% else %}
+  <input id="{{ nombre }}" name="{{ nombre }}" type="{{ tipo }}" value="{{ f.get(nombre) if f.get(nombre) is not none else '' }}" {% if requerido %}required{% endif %} {{ attrs|safe }}>
+  {% endif %}
+  {% if errores.get(nombre) %}<span class="field-error">{{ errores[nombre] }}</span>{% elif ayuda %}<span class="field-help">{{ ayuda }}</span>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro seleccion(nombre, etiqueta, opciones, f, errores, requerido=False, vacio='Seleccione…', clase='') -%}
+<div class="field {{ clase }} {% if errores.get(nombre) %}con-error{% endif %}">
+  <label for="{{ nombre }}">{{ etiqueta }}{% if requerido %} <span class="req">*</span>{% endif %}</label>
+  <select id="{{ nombre }}" name="{{ nombre }}" {% if requerido %}required{% endif %}>
+    {% if vacio %}<option value="">{{ vacio }}</option>{% endif %}
+    {% for valor, texto in opciones %}
+    <option value="{{ valor }}" {% if (f.get(nombre)|string) == (valor|string) %}selected{% endif %}>{{ texto }}</option>
+    {% endfor %}
+  </select>
+  {% if errores.get(nombre) %}<span class="field-error">{{ errores[nombre] }}</span>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro paginacion(total, pagina, tam, endpoint) -%}
+{% set paginas = ((total - 1) // tam + 1) if total else 1 %}
+<div class="paginacion">
+  <span>{{ total }} registro{{ 's' if total != 1 }}{% if paginas > 1 %} · página {{ pagina }} de {{ paginas }}{% endif %}</span>
+  {% if paginas > 1 %}
+  <div class="pags">
+    {% set args = request.args.to_dict() %}
+    {% if pagina > 1 %}{% set _ = args.update({'pagina': pagina - 1}) %}<a href="{{ url_for(endpoint, **args) }}" aria-label="Página anterior">‹</a>{% endif %}
+    {% for p in range([1, pagina - 2]|max, [paginas, pagina + 2]|min + 1) %}
+      {% set _ = args.update({'pagina': p}) %}
+      {% if p == pagina %}<span class="actual">{{ p }}</span>{% else %}<a href="{{ url_for(endpoint, **args) }}">{{ p }}</a>{% endif %}
+    {% endfor %}
+    {% if pagina < paginas %}{% set _ = args.update({'pagina': pagina + 1}) %}<a href="{{ url_for(endpoint, **args) }}" aria-label="Página siguiente">›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% set ESTADO_RESULTADO = {'normal': 'Normal', 'fuera_rango': 'Fuera de rango', 'critico': 'Crítico', 'sin_rango': 'Sin rango'} %}
+{% set PRIORIDAD = {'baja': 'Baja', 'media': 'Media', 'alta': 'Alta', 'critica': 'Crítica'} %}
+{% set ESTADO_CONSULTA = {'abierto': 'Abierta', 'cerrado': 'Cerrada', 'cancelado': 'Cancelada'} %}
+{% set TIPO_CONSULTA = {'consulta': 'Consulta', 'urgencia': 'Urgencia', 'hospitalizacion': 'Hospitalización'} %}
+{% set DECISION = {'aceptada': 'Aceptada', 'rechazada': 'Rechazada', 'modificada': 'Modificada'} %}
+
+{% macro badge(clase, texto) -%}<span class="badge {{ clase }}">{{ texto }}</span>{%- endmacro %}
+
+{% macro iniciales(nombre) -%}{{ (nombre or '?').split()[:2]|map('first')|join|upper }}{%- endmacro %}
+
+{# Botón que envía un POST con confirmación (bajas, cierres, cancelaciones) #}
+{% macro boton_post(url, texto, clase='btn sec', confirmar=None, extra='') -%}
+<form method="post" action="{{ url }}" {% if confirmar %}data-confirm="{{ confirmar }}"{% endif %} style="display:inline">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {{ extra|safe }}
+  <button class="{{ clase }}" type="submit">{{ texto }}</button>
+</form>
+{%- endmacro %}
