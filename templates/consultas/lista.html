@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "partials/_macros.html" import badge, paginacion, ESTADO_CONSULTA, TIPO_CONSULTA %}
 {% block title %}Consultas médicas{% endblock %}
-{% block subtitulo %}<div class="sub">Datos de la vista v_historial_consultas_medico</div>{% endblock %}
+{% block subtitulo %}<div class="sub">Datos de la vista vw_historial_consultas_medico</div>{% endblock %}
 {% block acciones %}{% if tiene_rol('medico', 'admin_clinico') %}<a class="btn" href="{{ url_for('consultas.nueva') }}">{{ icono('mas', 16) }} Nueva consulta</a>{% endif %}{% endblock %}
 {% block content %}
 <section class="card">
@@ -17,7 +17,7 @@
         {% for v, t in ESTADO_CONSULTA.items() %}<option value="{{ v }}" {{ 'selected' if estado == v }}>{{ t }}</option>{% endfor %}
       </select>
     </div>
-    {% if g.user.id_medico %}
+    {% if 'medico' in session.roles %}
     <div class="field">
       <label for="mias">Médico</label>
       <select id="mias" name="mias">

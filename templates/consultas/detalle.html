@@ -7,11 +7,11 @@
 {% block acciones %}
   {{ badge(enc.estado, ESTADO_CONSULTA[enc.estado]) }}
   {% if editable %}
-    <a class="btn sec" href="{{ url_for('consultas.editar', id_encuentro=enc.id_encuentro) }}">{{ icono('editar', 16) }} Editar</a>
+    {% if puede_ver('consultas.editar') %}<a class="btn sec" href="{{ url_for('consultas.editar', id_encuentro=enc.id_encuentro) }}">{{ icono('editar', 16) }} Editar</a>{% endif %}
     {{ boton_post(url_for('consultas.cerrar', id_encuentro=enc.id_encuentro), 'Cerrar consulta', 'btn',
                   '¿Cerrar la consulta? Después ya no se podrá modificar.') }}
   {% endif %}
-  {% if not abierta %}
+  {% if not abierta and puede_ver('reportes.consulta') %}
     <a class="btn sec" href="{{ url_for('reportes.consulta', id_encuentro=enc.id_encuentro) }}">{{ icono('informes', 16) }} Informe</a>
   {% endif %}
 {% endblock %}
@@ -38,7 +38,7 @@
       {% else %}<tr><td colspan="4"><div class="vacio">Sin diagnósticos. Para cerrar la consulta se necesita uno principal.</div></td></tr>{% endfor %}
       </tbody>
     </table></div>
-    {% if editable %}
+    {% if editable and puede_ver('consultas.agregar_diagnostico') %}
     <form method="post" action="{{ url_for('consultas.agregar_diagnostico', id_encuentro=enc.id_encuentro) }}" class="form-grid" data-validar novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="field full">
@@ -58,7 +58,7 @@
   </section>
 
   <section class="card" id="prescripciones">
-    <div class="card-head"><h2 class="card-title">Prescripciones</h2><span class="card-sub">Se revisan interacciones y alergias</span></div>
+    <div class="card-head"><h2 class="card-title">Prescripciones</h2><span class="card-sub">sp_prescribir_medicamento · inicia el día de hoy</span></div>
     <div class="table-wrap"><table class="tabla">
       <thead><tr><th>Medicamento</th><th>Dosis</th><th>Periodo</th></tr></thead>
       <tbody>
@@ -69,7 +69,7 @@
       {% else %}<tr><td colspan="3"><div class="vacio">Sin prescripciones en esta consulta.</div></td></tr>{% endfor %}
       </tbody>
     </table></div>
-    {% if editable and tiene_rol('medico') %}
+    {% if editable and tiene_rol('medico') and puede_ver('consultas.prescribir') %}
     <form method="post" action="{{ url_for('consultas.prescribir', id_encuentro=enc.id_encuentro) }}" class="form-grid" data-validar novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="field full"><label for="id_medicamento">Medicamento</label>
@@ -81,8 +81,6 @@
       <div class="field"><label for="id_via">Vía</label>
         <select id="id_via" name="id_via" required>{% for v in vias %}<option value="{{ v.id_via }}" {{ 'selected' if v.nombre == 'Oral' }}>{{ v.nombre }}</option>{% endfor %}</select></div>
       <div class="field"><label for="frecuencia_horas">Cada (horas)</label><input id="frecuencia_horas" name="frecuencia_horas" type="number" min="1" max="168" value="8" required data-mensaje="Frecuencia entre 1 y 168 horas."></div>
-      <div class="field"><label for="fecha_inicio">Inicio</label><input id="fecha_inicio" name="fecha_inicio" type="date" value="{{ hoy }}" required></div>
-      <div class="field"><label for="fecha_fin">Fin (opcional)</label><input id="fecha_fin" name="fecha_fin" type="date" data-no-antes-de="fecha_inicio" data-mensaje="El fin no puede ser antes del inicio."></div>
       <div class="field full"><label for="indicacion">Indicación</label><input id="indicacion" name="indicacion" maxlength="500"></div>
       <div class="form-actions full"><button class="btn" type="submit">{{ icono('mas', 16) }} Prescribir</button></div>
     </form>
@@ -106,7 +104,7 @@
     {% else %}<tr><td colspan="5"><div class="vacio">Sin órdenes médicas.</div></td></tr>{% endfor %}
     </tbody>
   </table></div>
-  {% if editable %}
+  {% if editable and puede_ver('consultas.crear_orden') %}
   <form method="post" action="{{ url_for('consultas.crear_orden', id_encuentro=enc.id_encuentro) }}" class="stack" data-validar novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <fieldset class="field" data-min-checks="1" data-mensaje="Seleccione al menos una prueba.">
@@ -126,7 +124,7 @@
 <section class="card" id="recomendaciones">
   <div class="card-head">
     <h2 class="card-title">Recomendaciones del copiloto</h2>
-    {% if editable %}
+    {% if editable and puede_ver('consultas.evaluar') %}
     <form method="post" action="{{ url_for('consultas.evaluar', id_encuentro=enc.id_encuentro) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button class="btn sec mini" type="submit">{{ icono('refrescar', 14) }} Evaluar reglas</button>
@@ -141,7 +139,7 @@
 </section>
 
 <section class="card">
-  <div class="card-head"><h2 class="card-title">Contexto clínico integrado</h2><span class="card-sub">v_contexto_clinico · lo que el copiloto sabe del paciente en esta consulta</span></div>
+  <div class="card-head"><h2 class="card-title">Contexto clínico integrado</h2><span class="card-sub">vw_contexto_clinico · lo que el copiloto sabe del paciente en esta consulta</span></div>
   <div class="table-wrap"><table class="tabla">
     <thead><tr><th>Fuente</th><th>Concepto</th><th>Valor</th><th>Fecha</th></tr></thead>
     <tbody>
@@ -152,7 +150,7 @@
   </table></div>
 </section>
 
-{% if editable %}
+{% if editable and puede_ver('consultas.cancelar') %}
 <section class="card no-print">
   <h2 class="card-title">Cancelar consulta</h2>
   <p class="small muted">Solo para consultas abiertas por error y sin información clínica (resultados, diagnósticos confirmados o decisiones).</p>

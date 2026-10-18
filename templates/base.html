@@ -26,7 +26,7 @@
 <div class="layout">
   <aside class="sidebar">
     <div>
-      <a class="brand" href="{{ url_for('index') }}">
+      <a class="brand" href="{{ url_for('panel.inicio') }}">
         <span class="brand-icon">{{ icono('copiloto', 18) }}</span>
         <span>
           <span class="brand-name">MedAssist AI</span><br>
@@ -36,18 +36,18 @@
       <nav class="nav" aria-label="Navegación principal">
         <div class="nav-section">
           <div class="nav-label">ESPACIO CLÍNICO</div>
-          {{ enlace('index', 'inicio', 'Panel principal') }}
+          {{ enlace('panel.inicio', 'inicio', 'Panel principal') }}
           {{ enlace('consultas.lista', 'consultas', 'Consultas') }}
           {{ enlace('pacientes.lista', 'pacientes', 'Pacientes') }}
-          {{ enlace('lab', 'laboratorio', 'Laboratorio') }}
-          {{ enlace('report', 'informes', 'Informes médicos') }}
+          {{ enlace('laboratorio.inicio', 'laboratorio', 'Laboratorio') }}
+          {{ enlace('reportes.inicio', 'informes', 'Informes médicos') }}
         </div>
-        {% if puede_ver('medicos.lista') or puede_ver('performance') or puede_ver('audit') or puede_ver('consultas_sql.inicio') %}
+        {% if puede_ver('medicos.lista') or puede_ver('rendimiento.inicio') or puede_ver('auditoria.inicio') or puede_ver('consultas_sql.inicio') %}
         <div class="nav-section">
           <div class="nav-label">GOBERNANZA</div>
           {{ enlace('medicos.lista', 'medicos', 'Médicos') }}
-          {{ enlace('performance', 'rendimiento', 'Rendimiento') }}
-          {{ enlace('audit', 'auditoria', 'Auditoría') }}
+          {{ enlace('rendimiento.inicio', 'rendimiento', 'Rendimiento') }}
+          {{ enlace('auditoria.inicio', 'auditoria', 'Auditoría') }}
           {{ enlace('consultas_sql.inicio', 'sql', 'Consultas SQL') }}
         </div>
         {% endif %}

@@ -70,6 +70,7 @@
       <form method="post" action="{{ url_for('consultas.editar', id_encuentro=enc.id_encuentro) }}" class="stack" data-validar novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="tipo" value="{{ enc.tipo }}">
+        <input type="hidden" name="volver" value="panel">
         <div class="field">
           <label for="motivo">Motivo</label>
           <input id="motivo" name="motivo" value="{{ enc.motivo }}" required minlength="5" maxlength="1000" data-mensaje="El motivo necesita al menos 5 caracteres.">
@@ -103,11 +104,13 @@
           Sin datos clínicos registrados todavía.
         {% endfor %}
       </div>
+      {% if puede_ver('consultas.evaluar') %}
       <form method="post" action="{{ url_for('consultas.evaluar', id_encuentro=enc.id_encuentro) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="volver" value="panel">
         <button class="btn sec bloque" type="submit">{{ icono('refrescar', 16) }} Evaluar reglas ahora</button>
       </form>
+      {% endif %}
       <div class="scan-label">RECOMENDACIONES ({{ pendientes|length }} PENDIENTE{{ 'S' if pendientes|length != 1 }})</div>
       {% for rec in recomendaciones %}
         {% with puede_decidir=puede_modificar, volver='panel' %}{% include "consultas/_recomendacion.html" %}{% endwith %}

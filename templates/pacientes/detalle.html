@@ -7,9 +7,9 @@
   <a class="btn sec" href="{{ url_for('pacientes.editar', id_paciente=p.id_paciente) }}">{{ icono('editar', 16) }} Editar</a>
   {% if tiene_rol('admin_clinico') %}
     {{ boton_post(url_for('pacientes.baja', id_paciente=p.id_paciente), 'Dar de baja', 'btn peligro',
-                  '¿Dar de baja a este paciente? Si no tiene historial clínico se eliminará; si lo tiene, se conservará como inactivo.') }}
+                  '¿Dar de baja a este paciente? Quedará inactivo y su historial clínico se conservará.') }}
   {% endif %}
-  {% elif tiene_rol('admin_clinico') %}
+  {% elif tiene_rol('admin_clinico') and puede_ver('pacientes.reactivar') %}
     {{ boton_post(url_for('pacientes.reactivar', id_paciente=p.id_paciente), 'Reactivar paciente', 'btn') }}
   {% endif %}
 {% endblock %}
@@ -50,14 +50,14 @@
   <section class="card">
     <h2 class="card-title">Medicación vigente</h2>
     {% for m in medicacion %}
-      <div><b>{{ m.nombre_comercial }}</b> <span class="small">{{ m.dosis }} {{ m.codigo_ucum }} c/{{ m.frecuencia_horas }} h</span><br>
+      <div><b>{{ m.nombre_comercial }}</b> <span class="small">{{ m.dosis_txt }} {{ m.codigo_ucum }} c/{{ m.frecuencia_horas }} h</span><br>
         <span class="small muted">Desde {{ m.fecha_inicio|fecha }}{% if m.fecha_fin %} hasta {{ m.fecha_fin|fecha }}{% endif %}</span></div>
     {% else %}<p class="muted small">Sin medicación vigente.</p>{% endfor %}
   </section>
 </div>
 
 <section class="card">
-  <div class="card-head"><h2 class="card-title">Historial de consultas</h2><span class="card-sub">v_historial_consultas_medico</span></div>
+  <div class="card-head"><h2 class="card-title">Historial de consultas</h2><span class="card-sub">vw_historial_consultas_medico</span></div>
   <div class="table-wrap">
     <table class="tabla">
       <thead><tr><th>Fecha</th><th>Tipo</th><th>Médico</th><th>Motivo</th><th>Diagnóstico principal</th><th>Estado</th></tr></thead>

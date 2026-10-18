@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "partials/_macros.html" import badge, paginacion %}
 {% block title %}Médicos{% endblock %}
-{% block acciones %}{% if tiene_rol('admin_clinico') %}<a class="btn" href="{{ url_for('medicos.nuevo') }}">{{ icono('mas', 16) }} Registrar médico</a>{% endif %}{% endblock %}
+{% block acciones %}{% if tiene_rol('admin_clinico') and puede_ver('medicos.nuevo') %}<a class="btn" href="{{ url_for('medicos.nuevo') }}">{{ icono('mas', 16) }} Registrar médico</a>{% endif %}{% endblock %}
 {% block content %}
 <section class="card">
   <form class="filtros" method="get">
@@ -36,7 +36,7 @@
           <td class="num">{{ m.consultas }}</td>
           <td class="num">{{ m.abiertas }}</td>
           <td>{{ badge('activo', 'Activo') if m.activo else badge('inactivo', 'Inactivo') }}</td>
-          <td class="acciones">{% if tiene_rol('admin_clinico') %}<a class="btn-icon" href="{{ url_for('medicos.editar', id_medico=m.id_medico) }}" title="Editar" aria-label="Editar">{{ icono('editar', 15) }}</a>{% endif %}</td>
+          <td class="acciones">{% if tiene_rol('admin_clinico') and puede_ver('medicos.editar') %}<a class="btn-icon" href="{{ url_for('medicos.editar', id_medico=m.id_medico) }}" title="Editar" aria-label="Editar">{{ icono('editar', 15) }}</a>{% endif %}</td>
         </tr>
       {% else %}<tr><td colspan="7"><div class="vacio">No hay médicos con esos filtros.</div></td></tr>{% endfor %}
       </tbody>

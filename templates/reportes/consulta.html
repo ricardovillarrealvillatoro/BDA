@@ -62,7 +62,7 @@
     <p class="small muted">Protocolo {{ r.protocolo }} {{ r.version_protocolo }} · generada {{ r.fecha_hora|fechahora }}</p>
     {% if r.evidencia %}
     <table class="tabla evidencia"><tbody>
-      {% for e in r.evidencia %}<tr class="{{ 'ok' if e.cumplida else 'no' }}"><td>{{ e.variable_nombre }}</td><td class="mono small">{{ e.operador }} {{ e.umbral or '' }} {{ e.unidad_umbral or '' }}</td><td>{{ e.valor_observado or 'sin dato' }} {{ e.unidad or '' }}</td><td>{{ '✓ cumple' if e.cumplida else '✗ no cumple' }}</td></tr>{% endfor %}
+      {% for e in r.evidencia %}<tr class="{{ 'ok' if e.cumplida else 'no' }}"><td>{{ e.variable }}</td><td class="mono small">{{ e.operador }} {{ e.umbral or '' }} {{ e.unidad_umbral or '' }}</td><td>{{ e.valor_observado or 'sin dato' }} {{ e.unidad or '' }}</td><td>{{ '✓ cumple' if e.cumplida else '✗ no cumple' }}</td></tr>{% endfor %}
     </tbody></table>
     {% endif %}
     {% if r.decision %}<p class="small"><b>{{ r.medico_decide }}</b> ({{ r.fecha_decision|fechahora }}): {{ r.justificacion }}{% if r.accion_final %} — Acción final: {{ r.accion_final }}{% endif %}</p>{% endif %}

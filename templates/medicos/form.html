@@ -25,12 +25,15 @@
       {{ campo('email', 'Correo institucional', f, errores, tipo='email', requerido=True, attrs='maxlength="120" data-mensaje="Escriba un correo válido."') }}
       {{ campo('cedula_profesional', 'Cédula profesional', f, errores, requerido=True,
                attrs='maxlength="20" pattern="[0-9A-Z]{5,20}" data-mayusculas data-mensaje="De 5 a 20 dígitos o letras mayúsculas."') }}
+      {% if modo == 'nuevo' %}
       {% set opciones_esp = [] %}{% for e in especialidades %}{% set _ = opciones_esp.append((e.id_especialidad, e.nombre)) %}{% endfor %}
       {{ seleccion('id_especialidad', 'Especialidad principal', opciones_esp, f, errores, vacio='Sin especialidad') }}
       {{ campo('cedula_especialidad', 'Cédula de la especialidad', f, errores,
                ayuda='Obligatoria si elige una especialidad.' ,
                attrs='maxlength="20" pattern="[0-9A-Z]{5,20}" data-mayusculas data-requerido-si="id_especialidad" data-mensaje="Capture la cédula de la especialidad (5 a 20 caracteres)."') }}
+      {% endif %}
     </div>
+    {% if modo == 'editar' %}<p class="field-help">Las especialidades se asignan desde el detalle del médico.</p>{% endif %}
     <div class="form-actions">
       <a class="btn sec" href="{{ url_for('medicos.detalle', id_medico=medico.id_medico) if medico else url_for('medicos.lista') }}">Cancelar</a>
       <button class="btn" type="submit">{{ 'Registrar médico' if modo == 'nuevo' else 'Guardar cambios' }}</button>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "partials/_macros.html" import badge %}
 {% block title %}{{ c.titulo }}{% endblock %}
-{% block subtitulo %}<div class="sub">{{ c.tipo }} · {{ c.pregunta }}</div>{% endblock %}
+{% block subtitulo %}<div class="sub">{{ c.tipo }} · tablas: {{ c.tablas|join(', ') }}</div>{% endblock %}
 {% block acciones %}<a class="btn sec" href="{{ url_for('consultas_sql.inicio') }}">Todas las consultas</a>{% endblock %}
 {% block content %}
 <div class="workspace">
@@ -9,8 +9,6 @@
     <section class="card">
       <div class="card-head"><h2 class="card-title">SQL</h2>{{ badge('teal sin-punto', c.tipo) }}</div>
       <pre class="sql"><code>{{ c.sql }}</code></pre>
-      <p><b>Explicación.</b> {{ c.explicacion }}</p>
-      <p class="small muted"><b>Uso en la aplicación:</b> {{ c.uso }}</p>
     </section>
     <section class="card">
       <div class="card-head">

@@ -5,7 +5,7 @@
   <div class="error-code">{{ codigo }}</div>
   <h2 class="card-title">{{ titulo }}</h2>
   <p class="muted">{{ mensaje }}</p>
-  <a class="btn" href="{{ url_for('panel.inicio') if g.user else url_for('auth.login') }}">Volver al inicio</a>
+  <a class="btn" href="{{ url_for('panel.inicio') if session.id_usuario else url_for('auth.login') }}">Volver al inicio</a>
 </div>
 {% endmacro %}
 {% block content %}{{ cuerpo() }}{% endblock %}

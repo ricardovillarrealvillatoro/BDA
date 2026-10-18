@@ -36,7 +36,7 @@
     <b>Justificación:</b> {{ rec.justificacion }}
     {% if rec.accion_final %}<br><b>Acción final:</b> {{ rec.accion_final }}{% endif %}
   </div>
-  {% elif puede_decidir %}
+  {% elif puede_decidir and puede_ver('consultas.decidir') %}
   <form class="decision-form" method="post" action="{{ url_for('consultas.decidir', id_recomendacion=rec.id_recomendacion) }}" data-validar data-decision novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="volver" value="{{ volver }}">

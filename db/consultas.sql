@@ -34,7 +34,7 @@ SELECT g.id_grupo AS grupo_hijo, g.operador_logico, padre.id_grupo AS grupo_padr
 FROM grupo_condicion g
 LEFT JOIN grupo_condicion padre ON g.id_grupo_padre = padre.id_grupo;
 
---Detalles completos de recomendaciones automáticas generadas poe sistema copiloto para encuentros clínicos, con datos de paciente, médico y regla aplicada
+--Detalles completos de recomendaciones automáticas generadas por el sistema copiloto para encuentros clínicos, con datos de paciente, médico y regla aplicada
 SELECT r.id_recomendacion, p.nombre AS paciente, u.nombre AS medico, vr.plantilla_texto, r.prioridad_asignada, r.fecha_hora
 FROM recomendacion r
 JOIN encuentro e ON r.id_encuentro = e.id_encuentro
@@ -44,6 +44,8 @@ JOIN version_regla vr ON r.id_version_regla = vr.id_version_regla;
 
 
 --Complementarios
+
+--Total de consultas por tipo con la primera y la última fecha registrada
 SELECT 
     e.tipo,
     COUNT(e.id_encuentro) AS total_consultas,
@@ -75,7 +77,7 @@ WHERE id_paciente IN (
     WHERE d.codigo_cie10 IN ('E11', 'I10')
 );
 
---WITH
+--WITH: médicos con más de 5 atenciones registradas
 WITH ResumenMedicos AS (
     SELECT 
         m.id_medico,
@@ -91,7 +93,7 @@ FROM ResumenMedicos
 WHERE total_atenciones > 5
 ORDER BY total_atenciones DESC;
 
---Ventana Func
+--Funciones de ventana: número de consulta de cada paciente y ranking global por fecha
 SELECT 
     e.id_encuentro,
     e.id_paciente,

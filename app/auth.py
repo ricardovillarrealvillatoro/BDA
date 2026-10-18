@@ -13,14 +13,30 @@ bp = Blueprint("auth", __name__)
 # completo ("pacientes" cubre pacientes.lista, pacientes.detalle, ...).
 # Una vista que no aparece aquí la puede ver cualquier usuario con sesión.
 PERMISOS = {
-    "lab": {"medico", "admin_clinico"},
-    "report": {"medico", "admin_clinico"},
-    "performance": {"admin_clinico", "auditor"},
-    "audit": {"admin_clinico", "auditor"},
+    "laboratorio": {"medico", "admin_clinico"},
+    "reportes": {"medico", "admin_clinico"},
+    "rendimiento": {"admin_clinico", "auditor"},
+    "auditoria": {"admin_clinico", "auditor"},
     # Secciones de base.html que todavía no tienen ruta (mismos roles que en medassist)
     "consultas": {"medico", "admin_clinico", "auditor"},
     "pacientes": {"medico", "admin_clinico"},
     "consultas_sql": {"admin_clinico", "auditor"},
+    "medicos": {"medico", "admin_clinico", "auditor"},
+    # Permisos por acción: tienen prioridad sobre los del Blueprint completo
+    "medicos.nuevo": {"admin_clinico"},
+    "medicos.editar": {"admin_clinico"},
+    "medicos.baja": {"admin_clinico"},
+    "medicos.reactivar": {"admin_clinico"},
+    "medicos.asignar_especialidad": {"admin_clinico"},
+    # El auditor ve las consultas pero no las abre ni las modifica
+    "consultas.nueva": {"medico", "admin_clinico"},
+    "consultas.editar": {"medico", "admin_clinico"},
+    "consultas.cerrar": {"medico", "admin_clinico"},
+    "consultas.cancelar": {"medico", "admin_clinico"},
+    "consultas.agregar_diagnostico": {"medico", "admin_clinico"},
+    "consultas.crear_orden": {"medico", "admin_clinico"},
+    "consultas.prescribir": {"medico"},
+    "consultas.decidir": {"medico"},
 }
 
 NOMBRES_ROL = {
@@ -69,18 +85,27 @@ def csrf_token():
     return session["csrf_token"]
 
 
-@bp.app_context_processor
-def variables_plantillas():
-    return {"csrf_token": csrf_token, "puede_ver": puede_ver, "tiene_rol": tiene_rol,
-            "rol_principal": rol_principal, "NOMBRES_ROL": NOMBRES_ROL}
+@bp.before_app_request
+def validar_csrf():
+    # Todo POST de la app (login, bajas, cierres, formularios) debe traer el token de csrf_token()
+    if request.method == "POST":
+        if not secrets.compare_digest(request.form.get("csrf_token", ""), csrf_token()):
+            abort(400)
+
+
+@bp.record_once
+def registrar_globales(state):
+    # Globales (no context processor) para que también funcionen dentro de macros importadas,
+    # como boton_post de partials/_macros.html
+    state.app.jinja_env.globals.update(
+        csrf_token=csrf_token, puede_ver=puede_ver, tiene_rol=tiene_rol,
+        rol_principal=rol_principal, NOMBRES_ROL=NOMBRES_ROL,
+    )
 
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if not secrets.compare_digest(request.form.get("csrf_token", ""), csrf_token()):
-            abort(400)
-
         username = request.form.get("username", "").strip().lower()
         password = request.form.get("password", "")
 
@@ -112,7 +137,7 @@ def login():
         # Solo se acepta "next" si es una ruta interna (evita redirecciones a otros sitios)
         siguiente = request.args.get("next", "")
         if not siguiente.startswith("/") or siguiente.startswith("//"):
-            siguiente = url_for("index")
+            siguiente = url_for("panel.inicio")
         return redirect(siguiente)
 
     return render_template("auth/login.html")

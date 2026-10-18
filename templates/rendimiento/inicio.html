@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% from "partials/_macros.html" import badge %}
+{% from "partials/_macros.html" import badge, TIPO_CONSULTA %}
 {% block title %}Rendimiento del copiloto{% endblock %}
-{% block subtitulo %}<div class="sub">Concordancia médico–copiloto (v_concordancia), indicadores (v_indicadores_atencion) y carga por especialidad (v_consultas_por_especialidad)</div>{% endblock %}
+{% block subtitulo %}<div class="sub">Concordancia médico–copiloto (decision_medica), indicadores (vw_indicadores_atencion) y carga por especialidad (vw_consultas_por_especialidad)</div>{% endblock %}
 {% block content %}
 {% set total_dec = totales.aceptadas + totales.modificadas + totales.rechazadas %}
 <section class="card">
@@ -60,17 +60,29 @@
     </div>
   </section>
   <section class="card">
-    <div class="card-head"><h2 class="card-title">Consultas por especialidad</h2><span class="card-sub">Incluye especialidades sin médicos (LEFT JOIN)</span></div>
-    {% set max_c = (especialidades|map(attribute='consultas')|max) if especialidades else 0 %}
+    <div class="card-head"><h2 class="card-title">Consultas por especialidad</h2><span class="card-sub">vw_consultas_por_especialidad</span></div>
+    {% set max_c = (especialidades|map(attribute='total_atenciones')|max) if especialidades else 0 %}
     <div class="barras">
       {% for e in especialidades %}
       <div class="barra-fila">
-        <span class="barra-etq">{{ e.especialidad }} <span class="muted small">· {{ e.medicos }} méd.</span></span>
-        <span class="barra-pista"><span class="barra-valor azul" style="width: {{ (100 * e.consultas / max_c) if max_c else 0 }}%"></span></span>
-        <span class="barra-num">{{ e.consultas }} <span class="muted">({{ e.urgencias }} urg.)</span></span>
+        <span class="barra-etq">{{ e.especialidad }}</span>
+        <span class="barra-pista"><span class="barra-valor azul" style="width: {{ (100 * e.total_atenciones / max_c) if max_c else 0 }}%"></span></span>
+        <span class="barra-num">{{ e.total_atenciones }} <span class="muted">({{ e.pacientes_unicos }} pac.)</span></span>
       </div>
-      {% endfor %}
+      {% else %}<div class="vacio">Sin datos.</div>{% endfor %}
     </div>
   </section>
 </div>
+
+<section class="card">
+  <div class="card-head"><h2 class="card-title">Indicadores de atención</h2><span class="card-sub">vw_indicadores_atencion · solo consultas cerradas</span></div>
+  <div class="table-wrap"><table class="tabla">
+    <thead><tr><th>Tipo</th><th class="num">Consultas cerradas</th><th class="num">Duración promedio</th></tr></thead>
+    <tbody>
+    {% for i in indicadores %}
+      <tr><td>{{ TIPO_CONSULTA.get(i.tipo_encuentro, i.tipo_encuentro) }}</td><td class="num">{{ i.total_encuentros }}</td><td class="num">{{ i.duracion_promedio_minutos|num }} min</td></tr>
+    {% else %}<tr><td colspan="3"><div class="vacio">Sin consultas cerradas.</div></td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
 {% endblock %}

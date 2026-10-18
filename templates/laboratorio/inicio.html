@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "partials/_macros.html" import badge, paginacion, ESTADO_RESULTADO %}
 {% block title %}Laboratorio{% endblock %}
-{% block subtitulo %}<div class="sub">Captura de resultados (sp_registrar_resultado) y consulta (v_resultados_laboratorio)</div>{% endblock %}
+{% block subtitulo %}<div class="sub">Captura de resultados (sp_registrar_resultado_laboratorio) y consulta (vw_resultados_laboratorio)</div>{% endblock %}
 {% block content %}
 <section class="card">
   <div class="card-head">
@@ -55,7 +55,7 @@
           <td>{{ r.prueba }}</td>
           <td class="mono small">{{ r.codigo_loinc or '—' }}</td>
           <td class="num">{% if r.valor_numerico is not none %}{{ r.valor_numerico|num }} {{ r.unidad or '' }}{% else %}{{ r.valor_texto }}{% endif %}</td>
-          <td>{{ badge(r.estado, ESTADO_RESULTADO[r.estado]) }}</td>
+          <td>{{ badge(r.estado_resultado, ESTADO_RESULTADO[r.estado_resultado]) }}</td>
         </tr>
       {% else %}<tr><td colspan="6"><div class="vacio">Sin resultados con esos filtros.</div></td></tr>{% endfor %}
       </tbody>

@@ -3,11 +3,11 @@
 {% block title %}Médico{% endblock %}
 {% block acciones %}
   {% if tiene_rol('admin_clinico') %}
-    <a class="btn sec" href="{{ url_for('medicos.editar', id_medico=m.id_medico) }}">{{ icono('editar', 16) }} Editar</a>
-    {% if m.activo %}
+    {% if puede_ver('medicos.editar') %}<a class="btn sec" href="{{ url_for('medicos.editar', id_medico=m.id_medico) }}">{{ icono('editar', 16) }} Editar</a>{% endif %}
+    {% if m.activo and puede_ver('medicos.baja') %}
       {{ boton_post(url_for('medicos.baja', id_medico=m.id_medico), 'Desactivar cuenta', 'btn peligro',
                     '¿Desactivar la cuenta de este médico? Ya no podrá iniciar sesión; su historial se conserva.') }}
-    {% else %}
+    {% elif not m.activo and puede_ver('medicos.reactivar') %}
       {{ boton_post(url_for('medicos.reactivar', id_medico=m.id_medico), 'Reactivar cuenta', 'btn') }}
     {% endif %}
   {% endif %}
@@ -32,11 +32,24 @@
   <div class="chips">
     {% for e in especialidades %}{{ badge('teal' if e.es_principal else 'cerrado', e.nombre ~ (' · principal' if e.es_principal else '') ~ ' · ' ~ e.cedula_especialidad) }}{% else %}<span class="muted small">Sin especialidad registrada.</span>{% endfor %}
   </div>
+  {% if tiene_rol('admin_clinico') and catalogo and puede_ver('medicos.asignar_especialidad') %}
+  <div class="divider"></div>
+  <form method="post" action="{{ url_for('medicos.asignar_especialidad', id_medico=m.id_medico) }}" class="form-grid" data-validar novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field"><label for="id_especialidad">Asignar especialidad</label>
+      <select id="id_especialidad" name="id_especialidad" required data-mensaje="Seleccione una especialidad."><option value="">Seleccione…</option>
+        {% for e in catalogo %}<option value="{{ e.id_especialidad }}">{{ e.nombre }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="cedula_especialidad">Cédula de la especialidad</label>
+      <input id="cedula_especialidad" name="cedula_especialidad" required maxlength="20" pattern="[0-9A-Z]{5,20}" data-mayusculas data-mensaje="De 5 a 20 dígitos o letras mayúsculas."></div>
+    <label class="check"><input type="checkbox" name="es_principal" value="1"><span>Marcar como principal</span></label>
+    <div class="form-actions full"><button class="btn" type="submit">{{ icono('mas', 16) }} Asignar</button></div>
+  </form>
+  {% endif %}
 </section>
 
 {% if concordancia %}
 <section class="card">
-  <div class="card-head"><h2 class="card-title">Concordancia con el copiloto</h2><span class="card-sub">v_concordancia</span></div>
+  <div class="card-head"><h2 class="card-title">Concordancia con el copiloto</h2><span class="card-sub">decision_medica · PGC = aceptadas + ½ modificadas</span></div>
   <div class="table-wrap"><table class="tabla">
     <thead><tr><th>Regla</th><th class="num">Decididas</th><th class="num">Aceptadas</th><th class="num">Modificadas</th><th class="num">Rechazadas</th><th class="num">PGC</th></tr></thead>
     <tbody>{% for c in concordancia %}<tr><td>{{ c.regla }} v{{ c.numero_version }} · {{ c.regla_nombre }}</td><td class="num">{{ c.decididas }}</td><td class="num">{{ c.aceptadas }}</td><td class="num">{{ c.modificadas }}</td><td class="num">{{ c.rechazadas }}</td><td class="num">{{ c.pgc|num }} %</td></tr>{% endfor %}</tbody>
@@ -45,7 +58,7 @@
 {% endif %}
 
 <section class="card">
-  <div class="card-head"><h2 class="card-title">Historial de consultas</h2><span class="card-sub">Últimas 30 · v_historial_consultas_medico</span></div>
+  <div class="card-head"><h2 class="card-title">Historial de consultas</h2><span class="card-sub">Últimas 30 · vw_historial_consultas_medico</span></div>
   <div class="table-wrap"><table class="tabla">
     <thead><tr><th>Fecha</th><th>Paciente</th><th>Tipo</th><th>Diagnóstico principal</th><th>Estado</th></tr></thead>
     <tbody>

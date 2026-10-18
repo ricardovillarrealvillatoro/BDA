@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% from "partials/_macros.html" import badge, PRIORIDAD, TIPO_CONSULTA %}
 {% block title %}Tablero clínico{% endblock %}
-{% block subtitulo %}<div class="sub">Indicadores en tiempo real · vista v_indicadores_atencion</div>{% endblock %}
-{% block acciones %}{% if g.user.id_medico %}<a class="btn sec" href="{{ url_for('panel.inicio') }}">{{ icono('inicio', 16) }} Mi espacio clínico</a>{% endif %}{% endblock %}
+{% block subtitulo %}<div class="sub">Indicadores en tiempo real · vw_indicadores_atencion, vw_pacientes_consultas_pendientes y vw_alertas_activas</div>{% endblock %}
+{% block acciones %}{% if tiene_rol('medico') %}<a class="btn sec" href="{{ url_for('panel.inicio') }}">{{ icono('inicio', 16) }} Mi espacio clínico</a>{% endif %}{% endblock %}
 {% block content %}
 <section class="card">
   <div class="kpis">
@@ -16,15 +16,15 @@
 </section>
 <div class="grid-2">
   <section class="card">
-    <div class="card-head"><h2 class="card-title">Consultas abiertas</h2><span class="card-sub">v_pacientes_consultas_pendientes</span></div>
+    <div class="card-head"><h2 class="card-title">Consultas abiertas</h2><span class="card-sub">vw_pacientes_consultas_pendientes</span></div>
     <div class="table-wrap">
       <table class="tabla">
         <thead><tr><th>Paciente</th><th>Médico</th><th>Desde</th><th class="num">Estudios</th><th class="num">Por decidir</th></tr></thead>
         <tbody>
         {% for p in pendientes %}
           <tr>
-            <td><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=p.id_encuentro) }}">{{ p.paciente }}</a><br><span class="small muted">{{ TIPO_CONSULTA[p.tipo] }}</span></td>
-            <td>{{ p.medico }}</td>
+            <td>{% if puede_ver('consultas.detalle') %}<a class="link" href="{{ url_for('consultas.detalle', id_encuentro=p.id_encuentro) }}">{{ p.paciente }}</a>{% else %}{{ p.paciente }}{% endif %}<br><span class="small muted">{{ TIPO_CONSULTA[p.tipo] }}</span></td>
+            <td>{{ p.medico_atendiendo }}</td>
             <td class="small">{{ p.fecha_inicio|fechahora }}</td>
             <td class="num">{{ p.pruebas_pendientes }}</td>
             <td class="num">{{ p.recomendaciones_pendientes }}</td>
@@ -35,14 +35,14 @@
     </div>
   </section>
   <section class="card">
-    <div class="card-head"><h2 class="card-title">Alertas activas</h2><span class="card-sub">v_alertas_activas · más urgentes primero</span></div>
+    <div class="card-head"><h2 class="card-title">Alertas activas</h2><span class="card-sub">vw_alertas_activas · más urgentes primero</span></div>
     <div class="table-wrap">
       <table class="tabla">
         <thead><tr><th>Paciente</th><th>Regla</th><th>Prioridad</th></tr></thead>
         <tbody>
         {% for a in alertas %}
           <tr>
-            <td><a class="link" href="{{ url_for('consultas.detalle', id_encuentro=a.id_encuentro) }}#rec-{{ a.id_recomendacion }}">{{ a.paciente }}</a></td>
+            <td>{% if puede_ver('consultas.detalle') %}<a class="link" href="{{ url_for('consultas.detalle', id_encuentro=a.id_encuentro) }}#rec-{{ a.id_recomendacion }}">{{ a.paciente }}</a>{% else %}{{ a.paciente }}{% endif %}<br><span class="small muted">{{ a.medico }}</span></td>
             <td>{{ a.regla }} · {{ a.regla_nombre }}</td>
             <td>{{ badge(a.prioridad_asignada, PRIORIDAD[a.prioridad_asignada]) }}</td>
           </tr>

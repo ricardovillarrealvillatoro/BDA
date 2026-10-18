@@ -13,7 +13,12 @@ CREATE OR REPLACE PROCEDURE sp_registrar_paciente(
 LANGUAGE plpgsql AS $$
 BEGIN
     IF p_fecha_nacimiento > CURRENT_DATE THEN
-        RAISE EXCEPTION 'La fecha de nacimiento no puede ser futura.';
+        RAISE EXCEPTION 'La fecha de nacimiento no puede ser futura.'
+            USING ERRCODE = 'check_violation', COLUMN = 'fecha_nacimiento';
+    END IF;
+    IF EXISTS (SELECT 1 FROM paciente WHERE curp = p_curp) THEN
+        RAISE EXCEPTION 'Ya existe un paciente con la CURP %.', p_curp
+            USING ERRCODE = 'unique_violation', COLUMN = 'curp';
     END IF;
 
     INSERT INTO paciente (curp, nombre, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, telefono, email, direccion)
@@ -47,6 +52,13 @@ CREATE OR REPLACE PROCEDURE sp_abrir_encuentro(
 )
 LANGUAGE plpgsql AS $$
 BEGIN
+    IF NOT EXISTS (SELECT 1 FROM paciente WHERE id_paciente = p_id_paciente AND activo) THEN
+        RAISE EXCEPTION 'El paciente no existe o está dado de baja.';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM usuario WHERE id_usuario = p_id_medico AND activo)
+       OR NOT EXISTS (SELECT 1 FROM medico WHERE id_medico = p_id_medico) THEN
+        RAISE EXCEPTION 'El médico no existe o su cuenta está desactivada.';
+    END IF;
     IF EXISTS (SELECT 1 FROM encuentro WHERE id_paciente = p_id_paciente AND estado = 'abierto') THEN
         RAISE EXCEPTION 'El paciente ya tiene una consulta abierta en curso.';
     END IF;
@@ -66,7 +78,7 @@ BEGIN
     UPDATE encuentro
     SET estado = 'cerrado',
         fecha_fin = NOW(),
-        notas = p_notas
+        notas = COALESCE(p_notas, notas)
     WHERE id_encuentro = p_id_encuentro AND estado = 'abierto';
 
     IF NOT FOUND THEN
@@ -162,5 +174,180 @@ BEGIN
 
     INSERT INTO medico_especialidad (id_medico, id_especialidad, cedula_especialidad, es_principal)
     VALUES (p_id_medico, p_id_especialidad, p_cedula_especialidad, p_es_principal);
+END;
+$$;
+
+-- Alta de un médico: cuenta de usuario, rol "medico", cédula y (opcional) especialidad principal.
+-- Los errores de duplicado indican la columna (USING COLUMN) para mostrarlos junto al campo del formulario.
+CREATE OR REPLACE PROCEDURE sp_registrar_medico(
+    IN p_username VARCHAR(50),
+    IN p_password_hash VARCHAR(255),
+    IN p_nombre VARCHAR(80),
+    IN p_apellido_paterno VARCHAR(60),
+    IN p_apellido_materno VARCHAR(60),
+    IN p_email VARCHAR(120),
+    IN p_cedula_profesional VARCHAR(20),
+    IN p_id_especialidad BIGINT,
+    IN p_cedula_especialidad VARCHAR(20),
+    OUT p_id_medico BIGINT
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM usuario WHERE username = p_username) THEN
+        RAISE EXCEPTION 'El usuario % ya existe.', p_username
+            USING ERRCODE = 'unique_violation', COLUMN = 'username';
+    END IF;
+    IF EXISTS (SELECT 1 FROM usuario WHERE lower(email) = lower(p_email)) THEN
+        RAISE EXCEPTION 'El correo % ya está registrado.', p_email
+            USING ERRCODE = 'unique_violation', COLUMN = 'email';
+    END IF;
+    IF EXISTS (SELECT 1 FROM medico WHERE cedula_profesional = p_cedula_profesional) THEN
+        RAISE EXCEPTION 'La cédula profesional % ya está registrada.', p_cedula_profesional
+            USING ERRCODE = 'unique_violation', COLUMN = 'cedula_profesional';
+    END IF;
+    IF p_id_especialidad IS NOT NULL AND
+       EXISTS (SELECT 1 FROM medico_especialidad WHERE cedula_especialidad = p_cedula_especialidad) THEN
+        RAISE EXCEPTION 'La cédula de especialidad % ya está registrada.', p_cedula_especialidad
+            USING ERRCODE = 'unique_violation', COLUMN = 'cedula_especialidad';
+    END IF;
+
+    INSERT INTO usuario (username, password_hash, nombre, apellido_paterno, apellido_materno, email)
+    VALUES (p_username, p_password_hash, p_nombre, p_apellido_paterno, p_apellido_materno, p_email)
+    RETURNING id_usuario INTO p_id_medico;
+
+    INSERT INTO usuario_rol (id_usuario, id_rol)
+    SELECT p_id_medico, id_rol FROM rol WHERE nombre = 'medico';
+
+    INSERT INTO medico (id_medico, cedula_profesional)
+    VALUES (p_id_medico, p_cedula_profesional);
+
+    IF p_id_especialidad IS NOT NULL THEN
+        CALL sp_asignar_especialidad_medico(p_id_medico, p_id_especialidad, p_cedula_especialidad, TRUE);
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_actualizar_medico(
+    IN p_id_medico BIGINT,
+    IN p_nombre VARCHAR(80),
+    IN p_apellido_paterno VARCHAR(60),
+    IN p_apellido_materno VARCHAR(60),
+    IN p_email VARCHAR(120),
+    IN p_cedula_profesional VARCHAR(20)
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM medico WHERE id_medico = p_id_medico) THEN
+        RAISE EXCEPTION 'El médico con ID % no existe.', p_id_medico;
+    END IF;
+    IF EXISTS (SELECT 1 FROM usuario WHERE lower(email) = lower(p_email) AND id_usuario <> p_id_medico) THEN
+        RAISE EXCEPTION 'El correo % ya está registrado.', p_email
+            USING ERRCODE = 'unique_violation', COLUMN = 'email';
+    END IF;
+    IF EXISTS (SELECT 1 FROM medico WHERE cedula_profesional = p_cedula_profesional AND id_medico <> p_id_medico) THEN
+        RAISE EXCEPTION 'La cédula profesional % ya está registrada.', p_cedula_profesional
+            USING ERRCODE = 'unique_violation', COLUMN = 'cedula_profesional';
+    END IF;
+
+    UPDATE usuario
+    SET nombre = p_nombre,
+        apellido_paterno = p_apellido_paterno,
+        apellido_materno = p_apellido_materno,
+        email = p_email
+    WHERE id_usuario = p_id_medico;
+
+    UPDATE medico SET cedula_profesional = p_cedula_profesional WHERE id_medico = p_id_medico;
+END;
+$$;
+
+-- Baja lógica (o reactivación) de la cuenta de un médico; su historial clínico se conserva
+CREATE OR REPLACE PROCEDURE sp_cambiar_estado_medico(
+    IN p_id_medico BIGINT,
+    IN p_activo BOOLEAN
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_abiertas INTEGER;
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM medico WHERE id_medico = p_id_medico) THEN
+        RAISE EXCEPTION 'El médico con ID % no existe.', p_id_medico;
+    END IF;
+
+    IF NOT p_activo THEN
+        SELECT COUNT(*) INTO v_abiertas FROM encuentro WHERE id_medico = p_id_medico AND estado = 'abierto';
+        IF v_abiertas > 0 THEN
+            RAISE EXCEPTION 'El médico tiene % consulta(s) abierta(s). Ciérrelas o cancélelas antes de desactivar la cuenta.', v_abiertas;
+        END IF;
+    END IF;
+
+    UPDATE usuario SET activo = p_activo WHERE id_usuario = p_id_medico AND activo <> p_activo;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'La cuenta del médico ya está %.', CASE WHEN p_activo THEN 'activa' ELSE 'desactivada' END;
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE PROCEDURE sp_actualizar_encuentro(
+    IN p_id_encuentro BIGINT,
+    IN p_tipo VARCHAR(20),
+    IN p_motivo TEXT,
+    IN p_notas TEXT
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    UPDATE encuentro
+    SET tipo = p_tipo,
+        motivo = p_motivo,
+        notas = p_notas
+    WHERE id_encuentro = p_id_encuentro AND estado = 'abierto';
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'La consulta % no existe o ya fue cerrada/cancelada.', p_id_encuentro;
+    END IF;
+END;
+$$;
+
+-- Cancelación de una consulta abierta por error: solo si todavía no tiene información clínica
+-- (resultados, diagnósticos confirmados o decisiones sobre recomendaciones). Sus órdenes pendientes se cancelan.
+CREATE OR REPLACE PROCEDURE sp_cancelar_encuentro(
+    IN p_id_encuentro BIGINT,
+    IN p_motivo TEXT
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF length(trim(coalesce(p_motivo, ''))) < 10 THEN
+        RAISE EXCEPTION 'Explique el motivo de la cancelación (mínimo 10 caracteres).';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM encuentro WHERE id_encuentro = p_id_encuentro AND estado = 'abierto') THEN
+        RAISE EXCEPTION 'La consulta % no existe o ya fue cerrada/cancelada.', p_id_encuentro;
+    END IF;
+    IF EXISTS (SELECT 1 FROM resultado r
+               JOIN detalle_orden d ON r.id_detalle = d.id_detalle
+               JOIN orden_medica o ON d.id_orden = o.id_orden
+               WHERE o.id_encuentro = p_id_encuentro) THEN
+        RAISE EXCEPTION 'No se puede cancelar: la consulta ya tiene resultados de laboratorio.';
+    END IF;
+    IF EXISTS (SELECT 1 FROM diagnostico WHERE id_encuentro = p_id_encuentro AND estado = 'confirmado') THEN
+        RAISE EXCEPTION 'No se puede cancelar: la consulta ya tiene diagnósticos confirmados.';
+    END IF;
+    IF EXISTS (SELECT 1 FROM decision_medica dm
+               JOIN recomendacion r ON dm.id_recomendacion = r.id_recomendacion
+               WHERE r.id_encuentro = p_id_encuentro) THEN
+        RAISE EXCEPTION 'No se puede cancelar: ya hay decisiones médicas sobre sus recomendaciones.';
+    END IF;
+
+    UPDATE detalle_orden SET estado = 'cancelada'
+    WHERE estado IN ('pendiente', 'tomada')
+      AND id_orden IN (SELECT id_orden FROM orden_medica WHERE id_encuentro = p_id_encuentro);
+
+    UPDATE orden_medica SET estado = 'cancelada'
+    WHERE id_encuentro = p_id_encuentro AND estado IN ('pendiente', 'en_proceso');
+
+    UPDATE encuentro
+    SET estado = 'cancelado',
+        fecha_fin = NOW(),
+        notas = concat_ws(E'\n', notas, 'Cancelada: ' || trim(p_motivo))
+    WHERE id_encuentro = p_id_encuentro;
 END;
 $$;
