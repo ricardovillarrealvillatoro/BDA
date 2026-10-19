@@ -39,10 +39,10 @@ pip install -r requirements.txt
    |---|---|
    | `01_schema.sql` | Tablas, restricciones e índices |
    | `06_datos_prueba.sql` | Datos sintéticos: 14 usuarios, 42 pacientes, 12 médicos, 93 consultas |
-   | `views.sql` | 9 vistas (`vw_*`) |
-   | `procedimientos.sql` | 15 procedimientos almacenados (`sp_*`) |
+   | `views.sql` | 9 vistas (`vw_*`), documentadas en [`docs/vistas.md`](docs/vistas.md) |
+   | `procedimientos.sql` | 15 procedimientos almacenados (`sp_*`), documentados en [`docs/procedimientos.md`](docs/procedimientos.md) |
    | `triggers.sql` | Auditoría automática de 16 tablas y bitácora inmutable |
-   | `consultas.sql` | 12 consultas JOIN y complementarias (las ejecuta la página *Consultas SQL*) |
+   | `consultas.sql` | 12 consultas JOIN y complementarias, cada una con su pregunta, resultado y aplicación (las ejecuta la página *Consultas SQL*), documentadas en [`docs/consultas.md`](docs/consultas.md) |
 
 ## Configuración
 

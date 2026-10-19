@@ -11,8 +11,10 @@ bp = Blueprint('consultas_sql', __name__, url_prefix='/consultas-sql')
 
 ARCHIVO_SQL = Path(__file__).resolve().parent.parent / 'db' / 'consultas.sql'
 MAX_FILAS = 200
+# Notas que se reconocen debajo del título de cada consulta en db/consultas.sql
+ETIQUETAS_NOTA = ('Tipo', 'Pregunta', 'Resultado', 'Aplicación')
 
-TABLAS_RE = re.compile(r'\b(?:FROM|JOIN)\s+([a-z_]+)', re.IGNORECASE)
+TABLAS_RE = re.compile(r'\b(?:FROM|JOIN)\s+([a-z_][a-z0-9_]*)', re.IGNORECASE)
 
 
 def clasificar(sql):
@@ -41,15 +43,27 @@ def clasificar(sql):
 
 
 def cargar_consultas():
-    # Cada consulta de db/consultas.sql lleva arriba un comentario "--Título"; se lee en cada
-    # petición para que lo que se agregue al archivo aparezca sin reiniciar la app
-    consultas, titulo, sql = [], None, []
+    # Cada consulta de db/consultas.sql lleva arriba un comentario "--Título" y debajo sus notas
+    # ("-- Pregunta: ...", "-- Resultado: ...", "-- Aplicación: ..."; "-- Tipo: ..." reemplaza la etiqueta de clasificar).
+    # Un comentario seguido de una línea en blanco es un encabezado de sección y no se usa.
+    # Se lee en cada petición para que lo que se agregue al archivo aparezca sin reiniciar la app
+    consultas, titulo, notas, etiqueta, sql = [], None, {}, None, []
     for linea in ARCHIVO_SQL.read_text(encoding='utf-8').splitlines():
         texto = linea.strip()
         if not sql and texto.startswith('--'):
-            titulo = texto.lstrip('-').strip()
+            comentario = texto.lstrip('-').strip()
+            nombre, separador, resto = comentario.partition(':')
+            if titulo is None:
+                titulo = comentario
+            elif separador and nombre in ETIQUETAS_NOTA:
+                etiqueta = nombre
+                notas[etiqueta] = resto.strip()
+            elif etiqueta:
+                # Continuación de la nota anterior
+                notas[etiqueta] += ' ' + comentario
             continue
         if not texto and not sql:
+            titulo, notas, etiqueta = None, {}, None
             continue
         sql.append(linea)
         if texto.endswith(';'):
@@ -57,11 +71,12 @@ def cargar_consultas():
             consultas.append({
                 'id': len(consultas) + 1,
                 'titulo': titulo or f'Consulta {len(consultas) + 1}',
-                'tipo': clasificar(cuerpo),
+                'tipo': notas.pop('Tipo', None) or clasificar(cuerpo),
+                'notas': notas,
                 'tablas': sorted(set(t.lower() for t in TABLAS_RE.findall(cuerpo))),
                 'sql': cuerpo,
             })
-            titulo, sql = None, []
+            titulo, notas, etiqueta, sql = None, {}, None, []
     return consultas
 
 

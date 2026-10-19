@@ -17,7 +17,6 @@ PERMISOS = {
     "reportes": {"medico", "admin_clinico"},
     "rendimiento": {"admin_clinico", "auditor"},
     "auditoria": {"admin_clinico", "auditor"},
-    # Secciones de base.html que todavía no tienen ruta (mismos roles que en medassist)
     "consultas": {"medico", "admin_clinico", "auditor"},
     "pacientes": {"medico", "admin_clinico"},
     "consultas_sql": {"admin_clinico", "auditor"},
@@ -48,7 +47,7 @@ NOMBRES_ROL = {
 
 
 def puede_ver(endpoint):
-    # Falso si la ruta aún no existe, así base.html no enlaza a páginas sin hacer
+    # Falso si el endpoint no existe, así base.html no enlaza a una ruta mal escrita
     if endpoint not in current_app.view_functions:
         return False
     permitidos = PERMISOS.get(endpoint, PERMISOS.get(endpoint.split(".")[0]))
@@ -57,12 +56,6 @@ def puede_ver(endpoint):
 
 def tiene_rol(*roles):
     return any(r in session.get("roles", []) for r in roles)
-
-
-def rol_principal():
-    # El primero de NOMBRES_ROL que tenga el usuario (el de mayor jerarquía)
-    roles = session.get("roles", [])
-    return next((nombre for rol, nombre in NOMBRES_ROL.items() if rol in roles), "")
 
 
 def login_required(vista):
@@ -98,8 +91,7 @@ def registrar_globales(state):
     # Globales (no context processor) para que también funcionen dentro de macros importadas,
     # como boton_post de partials/_macros.html
     state.app.jinja_env.globals.update(
-        csrf_token=csrf_token, puede_ver=puede_ver, tiene_rol=tiene_rol,
-        rol_principal=rol_principal, NOMBRES_ROL=NOMBRES_ROL,
+        csrf_token=csrf_token, puede_ver=puede_ver, tiene_rol=tiene_rol, NOMBRES_ROL=NOMBRES_ROL,
     )
 
 

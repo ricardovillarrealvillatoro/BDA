@@ -1,17 +1,8 @@
 SET client_min_messages = warning;
--- =====================================================================
--- MedAssist AI · Copiloto clínico multimodal (Equipo 06)
--- 01_schema.sql — Tablas, restricciones e índices (PostgreSQL 14+)
---
--- Cambios respecto al modelo del Avance 1 (ver docs/CAMBIOS_MODELO.md):
---   * Claves sustitutas BIGINT GENERATED ALWAYS AS IDENTITY en lugar de UUID.
---   * PACIENTE.activo / fecha_baja: baja lógica (no se borra historial).
---   * ENCUENTRO.estado: abierto, cerrado o cancelado.
---   * Columnas mongo_*: siguen en el modelo; MongoDB se integra en una fase posterior.
--- =====================================================================
+-- MedAssist AI · Tablas, restricciones e índices (PostgreSQL 14+)
+-- Las columnas mongo_* guardan el id del documento en MongoDB (se integra en una fase posterior).
 
--- Limpieza idempotente: elimina vistas, tablas y rutinas previas del esquema public.
--- (No se usa DROP SCHEMA porque en Cloud SQL el esquema public no pertenece al usuario de la app.)
+-- Borra lo anterior del esquema public; sin DROP SCHEMA porque en Cloud SQL public no es del usuario de la app
 DO $$
 DECLARE r record;
 BEGIN
@@ -29,9 +20,7 @@ BEGIN
   END LOOP;
 END $$;
 
--- ---------------------------------------------------------------------
 -- A. Usuarios, médicos y auditoría
--- ---------------------------------------------------------------------
 CREATE TABLE usuario (
   id_usuario        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   username          VARCHAR(50)  NOT NULL UNIQUE,
@@ -95,9 +84,7 @@ CREATE INDEX ix_auditoria_fecha   ON auditoria(fecha_hora DESC);
 CREATE INDEX ix_auditoria_usuario ON auditoria(id_usuario);
 CREATE INDEX ix_auditoria_tabla   ON auditoria(tabla);
 
--- ---------------------------------------------------------------------
 -- B. Paciente, antecedentes, encuentros y diagnósticos
--- ---------------------------------------------------------------------
 CREATE TABLE paciente (
   id_paciente       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   curp              CHAR(18)     NOT NULL UNIQUE,
@@ -172,9 +159,7 @@ CREATE TABLE diagnostico (
 );
 CREATE UNIQUE INDEX ux_diagnostico_principal ON diagnostico(id_encuentro) WHERE tipo = 'principal';
 
--- ---------------------------------------------------------------------
 -- C. Medicamentos y tratamientos
--- ---------------------------------------------------------------------
 CREATE TABLE unidad (
   id_unidad     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   codigo_ucum   VARCHAR(20)   NOT NULL UNIQUE,
@@ -251,9 +236,7 @@ CREATE TABLE prescripcion (
 );
 CREATE INDEX ix_prescripcion_encuentro ON prescripcion(id_encuentro);
 
--- ---------------------------------------------------------------------
 -- D. Órdenes, laboratorio, imagen, signos vitales y genómica
--- ---------------------------------------------------------------------
 CREATE TABLE prueba (
   id_prueba    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   codigo_loinc VARCHAR(10)  NOT NULL UNIQUE,
@@ -356,9 +339,7 @@ CREATE TABLE estudio_genomico (
   mongo_variantes_id  CHAR(24) NOT NULL
 );
 
--- ---------------------------------------------------------------------
 -- E. Protocolos y reglas configurables
--- ---------------------------------------------------------------------
 CREATE TABLE protocolo (
   id_protocolo       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   codigo             VARCHAR(10)  NOT NULL UNIQUE,
@@ -452,9 +433,7 @@ CREATE TABLE condicion_regla (
   CONSTRAINT uq_condicion_orden UNIQUE (id_grupo, orden)
 );
 
--- ---------------------------------------------------------------------
 -- F. Recomendación, evidencia y decisión médica
--- ---------------------------------------------------------------------
 CREATE TABLE recomendacion (
   id_recomendacion     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   id_encuentro         BIGINT NOT NULL REFERENCES encuentro(id_encuentro),

@@ -6,6 +6,14 @@
 {% block content %}
 <div class="workspace">
   <div class="stack">
+    {% if c.notas %}
+    <section class="card">
+      <h2 class="card-title">Explicación</h2>
+      <dl class="dl">
+        {% for etiqueta, texto in c.notas.items() %}<dt>{{ etiqueta }}</dt><dd>{{ texto }}</dd>{% endfor %}
+      </dl>
+    </section>
+    {% endif %}
     <section class="card">
       <div class="card-head"><h2 class="card-title">SQL</h2>{{ badge('teal sin-punto', c.tipo) }}</div>
       <pre class="sql"><code>{{ c.sql }}</code></pre>

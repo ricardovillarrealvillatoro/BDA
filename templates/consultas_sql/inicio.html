@@ -11,7 +11,7 @@
       {% for c in consultas %}
         <tr>
           <td>{{ badge('teal sin-punto', c.tipo) }}</td>
-          <td><b>{{ c.titulo }}</b></td>
+          <td><b>{{ c.titulo }}</b>{% if c.notas.Pregunta %}<br><span class="small muted">{{ c.notas.Pregunta }}</span>{% endif %}</td>
           <td class="small muted mono">{{ c.tablas|join(', ') }}</td>
           <td class="acciones"><a class="btn sec mini" href="{{ url_for('consultas_sql.detalle', id_consulta=c.id) }}">{{ icono('sql', 14) }} Ejecutar</a></td>
         </tr>

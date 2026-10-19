@@ -1,3 +1,10 @@
+-- =====================================================================
+-- MedAssist AI · Procedimientos almacenados (15, se invocan con CALL desde Flask)
+-- Documentación completa (parámetros, tablas, reglas, excepciones, ejemplos y
+-- resultados obtenidos): docs/procedimientos.md
+-- =====================================================================
+
+-- Alta de un paciente; rechaza fecha de nacimiento futura y CURP repetida (USING COLUMN para el formulario).
 CREATE OR REPLACE PROCEDURE sp_registrar_paciente(
     IN p_curp CHAR(18),
     IN p_nombre VARCHAR(80),
@@ -27,6 +34,7 @@ BEGIN
 END;
 $$;
 
+-- Baja lógica de un paciente: se conserva la fila y su historial clínico.
 CREATE OR REPLACE PROCEDURE sp_desactivar_paciente(
     IN p_id_paciente BIGINT
 )
@@ -43,6 +51,7 @@ BEGIN
 END;
 $$;
 
+-- Abre una consulta: paciente activo, médico activo y una sola consulta abierta por paciente.
 CREATE OR REPLACE PROCEDURE sp_abrir_encuentro(
     IN p_id_paciente BIGINT,
     IN p_id_medico BIGINT,
@@ -69,6 +78,7 @@ BEGIN
 END;
 $$;
 
+-- Cierra una consulta abierta; con p_notas NULL se conservan las notas que ya tenía.
 CREATE OR REPLACE PROCEDURE sp_cerrar_encuentro(
     IN p_id_encuentro BIGINT,
     IN p_notas TEXT
@@ -87,6 +97,7 @@ BEGIN
 END;
 $$;
 
+-- Agrega un diagnóstico CIE-10; las restricciones de la tabla impiden un segundo principal o un código repetido.
 CREATE OR REPLACE PROCEDURE sp_registrar_diagnostico(
     IN p_id_encuentro BIGINT,
     IN p_codigo_cie10 VARCHAR(10),
@@ -100,6 +111,7 @@ BEGIN
 END;
 $$;
 
+-- Receta interna con fecha de inicio de hoy; la tabla valida dosis, frecuencia y que no se repita el mismo día.
 CREATE OR REPLACE PROCEDURE sp_prescribir_medicamento(
     IN p_id_encuentro BIGINT,
     IN p_id_medicamento BIGINT,
@@ -117,6 +129,7 @@ BEGIN
 END;
 $$;
 
+-- Crea una orden de laboratorio pendiente; Flask agrega sus pruebas (detalle_orden) en la misma transacción.
 CREATE OR REPLACE PROCEDURE sp_generar_orden_medica(
     IN p_id_encuentro BIGINT,
     IN p_id_medico BIGINT,
@@ -131,6 +144,7 @@ BEGIN
 END;
 $$;
 
+-- Guarda el resultado de una prueba y la marca como reportada en la misma transacción.
 CREATE OR REPLACE PROCEDURE sp_registrar_resultado_laboratorio(
     IN p_id_detalle BIGINT,
     IN p_valor_numerico NUMERIC(12,4),
@@ -146,6 +160,7 @@ BEGIN
 END;
 $$;
 
+-- Decisión del médico sobre una recomendación del copiloto (una por recomendación).
 CREATE OR REPLACE PROCEDURE sp_registrar_decision_medica(
     IN p_id_recomendacion BIGINT,
     IN p_id_medico BIGINT,
@@ -160,6 +175,7 @@ BEGIN
 END;
 $$;
 
+-- Asigna una especialidad; si es principal, la anterior deja de serlo (solo una principal por médico).
 CREATE OR REPLACE PROCEDURE sp_asignar_especialidad_medico(
     IN p_id_medico BIGINT,
     IN p_id_especialidad BIGINT,
@@ -227,6 +243,7 @@ BEGIN
 END;
 $$;
 
+-- Cambia los datos de un médico; correo y cédula no pueden ser de otro usuario.
 CREATE OR REPLACE PROCEDURE sp_actualizar_medico(
     IN p_id_medico BIGINT,
     IN p_nombre VARCHAR(80),
@@ -288,6 +305,7 @@ BEGIN
 END;
 $$;
 
+-- Corrige tipo, motivo o notas de una consulta que sigue abierta.
 CREATE OR REPLACE PROCEDURE sp_actualizar_encuentro(
     IN p_id_encuentro BIGINT,
     IN p_tipo VARCHAR(20),

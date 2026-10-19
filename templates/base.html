@@ -14,8 +14,8 @@
 <body>
 {% from "partials/_macros.html" import iniciales %}
 {#
-  Enlace del menú: solo aparece si la ruta ya existe y el rol del usuario puede verla
-  (ver puede_ver y PERMISOS en app/auth.py). Al crear un Blueprint nuevo, su enlace aparece solo.
+  Enlace del menú: solo aparece si el rol del usuario puede ver la página
+  (ver puede_ver y PERMISOS en app/auth.py).
 #}
 {% macro enlace(endpoint, nombre_icono, texto) -%}
 {% if puede_ver(endpoint) %}

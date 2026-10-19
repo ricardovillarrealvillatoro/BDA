@@ -1,14 +1,15 @@
 -- =====================================================================
 -- MedAssist AI · Datos de prueba (sintéticos) en SQL puro
--- Exportados de scripts/seed.py el 17/10/2026: usuario 14 · paciente 42 · medico 12 · encuentro 93 · resultado 196 · recomendacion 70
+-- Exportados el 17/10/2026: usuario 14 · paciente 42 · medico 12 · encuentro 93 · resultado 196 · recomendacion 70
 --
--- Requisito: el esquema recién creado y VACÍO (01 a 04):
---   for f in db/0[1-4]_*.sql; do psql ... -v ON_ERROR_STOP=1 -f "$f"; done
+-- Requisito: el esquema recién creado y VACÍO. Se carga justo después de db/01_schema.sql y antes de
+-- views.sql, procedimientos.sql y triggers.sql (orden completo en README.md):
+--   psql -h localhost -U medassist_app -d medassist -v ON_ERROR_STOP=1 -f db/01_schema.sql
 --   psql -h localhost -U medassist_app -d medassist -v ON_ERROR_STOP=1 -f db/06_datos_prueba.sql
+-- Usa \restrict / \unrestrict de pg_dump: requiere psql 17.6, 16.10, 15.14 o 14.19 en adelante.
 --
 -- Contraseña de todos los usuarios: MedAssist2026!  (se guarda como hash de Werkzeug)
--- Las fechas quedan fijas a la fecha de exportación. Para fechas relativas a hoy use
--- python -m scripts.init_db --seed.
+-- Las fechas quedan fijas a la fecha de exportación.
 -- =====================================================================
 
 DO $$
