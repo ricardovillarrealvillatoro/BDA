@@ -9,7 +9,7 @@
 <article class="card informe">
   <header class="informe-head">
     <div>
-      <div class="brand-mini">MedAssist AI · Informe clínico</div>
+      <div class="brand-mini">MedAssist · Informe clínico</div>
       <h2 class="card-title">{{ TIPO_CONSULTA[enc.tipo] }} del {{ enc.fecha_inicio|fecha }}</h2>
     </div>
     {{ badge(enc.estado, ESTADO_CONSULTA[enc.estado]) }}
@@ -69,6 +69,6 @@
   </div>
   {% else %}<p class="muted">El copiloto no generó recomendaciones en esta consulta.</p>{% endfor %}
 
-  <footer class="informe-pie small muted">Datos sintéticos generados para el proyecto académico MedAssist AI · Emitido {{ ahora()|fechahora }}</footer>
+  <footer class="informe-pie small muted">Datos sintéticos generados para el proyecto académico MedAssist · Emitido {{ ahora()|fechahora }}</footer>
 </article>
 {% endblock %}

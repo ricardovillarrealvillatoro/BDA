@@ -1,5 +1,5 @@
 -- =====================================================================
--- MedAssist AI · Datos de prueba (sintéticos) en SQL puro
+-- MedAssist · Datos de prueba (sintéticos) en SQL puro
 -- Exportados el 17/10/2026: usuario 14 · paciente 42 · medico 12 · encuentro 93 · resultado 196 · recomendacion 70
 --
 -- Requisito: el esquema recién creado y VACÍO. Se carga justo después de db/01_schema.sql y antes de

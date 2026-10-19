@@ -1,4 +1,4 @@
-# MedAssist AI · Copiloto clínico
+# MedAssist · Copiloto clínico
 
 Aplicación web en Flask + PostgreSQL para el registro de pacientes, médicos y consultas,
 con el seguimiento de las recomendaciones del copiloto clínico (Equipo 06).

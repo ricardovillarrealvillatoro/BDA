@@ -1,4 +1,4 @@
-/* MedAssist AI · validación en el navegador y comportamiento de la interfaz.
+/* MedAssist · validación en el navegador y comportamiento de la interfaz.
  * La validación de aquí es solo una ayuda: el servidor (funciones validar_* de app/) y la base de datos
  * vuelven a validar todo. Ningún dato se guarda si el servidor lo rechaza. */
 (function () {

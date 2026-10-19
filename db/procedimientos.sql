@@ -1,5 +1,5 @@
 -- =====================================================================
--- MedAssist AI · Procedimientos almacenados (15, se invocan con CALL desde Flask)
+-- MedAssist · Procedimientos almacenados (15, se invocan con CALL desde Flask)
 -- Documentación completa (parámetros, tablas, reglas, excepciones, ejemplos y
 -- resultados obtenidos): docs/procedimientos.md
 -- =====================================================================

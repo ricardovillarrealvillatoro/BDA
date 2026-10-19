@@ -1,5 +1,5 @@
 SET client_min_messages = warning;
--- MedAssist AI · Tablas, restricciones e índices (PostgreSQL 14+)
+-- MedAssist · Tablas, restricciones e índices (PostgreSQL 14+)
 -- Las columnas mongo_* guardan el id del documento en MongoDB (se integra en una fase posterior).
 
 -- Borra lo anterior del esquema public; sin DROP SCHEMA porque en Cloud SQL public no es del usuario de la app
